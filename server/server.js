@@ -11,6 +11,7 @@ import connectDB from "./config/dbConfig.js"
 dotenv.config()
 
 import authRoutes from "./routes/authRoutes.js"
+import errorHandler from "./middleware/errorHandler.js";
 
 
 
@@ -22,8 +23,19 @@ const app = express()
 connectDB()
 
 
+// Body-Parser
+app.use(express.json())
+app.use(express.urlencoded())
+
+
 // AUTH ROUTES
 app.use("/api/auth", authRoutes)
+
+
+
+// Error Handler
+app.use(errorHandler)
+
 
 app.listen(PORT, () => {
     console.log(`SERVER IS RUNNING AT PORT : ${PORT}`.bgBlue)
