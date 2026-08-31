@@ -11,6 +11,7 @@ import connectDB from "./config/dbConfig.js"
 dotenv.config()
 
 import authRoutes from "./routes/authRoutes.js"
+import adminRoutes from "./routes/adminRoutes.js"
 import errorHandler from "./middleware/errorHandler.js";
 
 
@@ -31,7 +32,8 @@ app.use(express.urlencoded())
 // AUTH ROUTES
 app.use("/api/auth", authRoutes)
 
-
+// ADMIN ROUTES
+app.use("/api/admin", adminRoutes)
 
 // Error Handler
 app.use(errorHandler)

@@ -75,6 +75,35 @@ const getMyProfile = async (req, res) => {
 }
 
 
+const updateProfile = async (req, res) => {
+
+    const { userType } = req.body
+
+    if (userType) {
+        res.status(401)
+        throw new Error("Only Admin Can Change User Type!!!")
+    }
+
+    let user = await User.findById(req.user.id)
+
+    if (!user) {
+        res.status(404)
+        throw new Error("No User Found!")
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(user._id, req.body, { new: true })
+
+    if (!updatedUser) {
+        res.status(409)
+        throw new Error("User Not Updated!")
+    }
+
+    res.status(200).json(updatedUser)
+}
+
+
+
+
 
 
 const generateToken = (id) => {
@@ -86,7 +115,8 @@ const generateToken = (id) => {
 const authService = {
     registerUser,
     loginUser,
-    getMyProfile
+    getMyProfile,
+    updateProfile
 }
 
 export default authService
