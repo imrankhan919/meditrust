@@ -13,6 +13,7 @@ dotenv.config()
 import authRoutes from "./routes/authRoutes.js"
 import adminRoutes from "./routes/adminRoutes.js"
 import aiRoutes from "./routes/aiRoutes.js"
+import productRoutes from "./routes/productRoutes.js"
 import errorHandler from "./middleware/errorHandler.js";
 
 
@@ -38,6 +39,9 @@ app.use("/api/admin", adminRoutes)
 
 // A.I Routes
 app.use("/api/ai", aiRoutes)
+
+// Product Routes
+app.use("/api/products", productRoutes)
 
 // Error Handler
 app.use(errorHandler)
