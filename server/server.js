@@ -14,6 +14,7 @@ import authRoutes from "./routes/authRoutes.js"
 import adminRoutes from "./routes/adminRoutes.js"
 import aiRoutes from "./routes/aiRoutes.js"
 import productRoutes from "./routes/productRoutes.js"
+import pathologistRoutes from "./routes/pathologistRoutes.js"
 import errorHandler from "./middleware/errorHandler.js";
 
 
@@ -42,6 +43,9 @@ app.use("/api/ai", aiRoutes)
 
 // Product Routes
 app.use("/api/products", productRoutes)
+
+// Pathologist Routes
+app.use("/api/pathologist", pathologistRoutes)
 
 // Error Handler
 app.use(errorHandler)
