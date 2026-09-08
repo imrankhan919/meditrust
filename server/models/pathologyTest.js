@@ -1,6 +1,11 @@
 import mongoose from "mongoose";
 
 const pathologyTestSchema = new mongoose.Schema({
+    pathologist: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Pathologist",
+        required: true
+    },
     title: {
         type: String,
         required: true
