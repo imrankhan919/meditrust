@@ -5,7 +5,8 @@ import pathologistController from "../controllers/pathologist/pathologistControl
 const router = express.Router()
 
 
-router.get("/tests", protect.forUser, pathologistController.getAllPathologyTests)
+router.get("/", pathologistController.getAllPathologists)
+router.get("/tests", pathologistController.getAllPathologyTests)
 router.get("/appointments", protect.forUser, pathologistController.getAllAppointments)
 router.get("/appointments/:aid", protect.forUser, pathologistController.getAppointment)
 
