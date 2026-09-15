@@ -1,6 +1,9 @@
 import { GoogleGenAI } from "@google/genai";
 import fs from "node:fs"
 import uploadToCloudinary from "../../middleware/cloudinaryMiddleware.js";
+import Prescription from "../../models/prescriptionModel.js";
+import Product from "../../models/productModel.js";
+import Pathologist from "../../models/pathologistModel.js";
 
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
@@ -36,6 +39,9 @@ function fileToBase64(path) {
 
 
 const explainPrescription = async (req, res) => {
+
+    let userId = req.user.id
+
     try {
         if (!req.file) {
             return res.status(400).json({ error: "No image uploaded" });
@@ -70,10 +76,20 @@ const explainPrescription = async (req, res) => {
         const text = response.text; // property, not a function, in the new SDK
         const data = JSON.parse(text);
 
-        res.status(200).json({
-            data: data,
+        const prescription = new Prescription({
+            user: userId,
+            patient_name: data.patient_name,
+            doctor_name: data.doctor_name,
+            date: data.date,
+            medicines: data.medicines,
+            diagnosis_notes: data.diagnosis_notes,
             image: image.secure_url
         })
+
+        await prescription.save()
+        await prescription.populate("user")
+
+        res.status(200).json(prescription)
 
 
     } catch (err) {
@@ -84,8 +100,27 @@ const explainPrescription = async (req, res) => {
 }
 
 
+const findMedicines = async (req, res) => {
+
+    const pid = req.params.pid
+
+    const products = await Product.find()
+    const pathologists = await Pathologist.find()
+    const prescription = await Prescription.findById(pid)
+
+    res.json({ products, pathologists, medicines: prescription.medicines })
+
+
+
+}
+
+
+
+
 const aiController = {
-    explainPrescription
+    explainPrescription, findMedicines
 }
 
 export default aiController
+
+
