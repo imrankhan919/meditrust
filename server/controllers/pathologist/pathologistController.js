@@ -172,6 +172,7 @@ const bookTest = async (req, res) => {
     const pid = req.params.pid
     const { pathologyTest } = req.body
 
+
     if (!pathologyTest) {
         res.status(409)
         throw new Error("Add PathologyTest")

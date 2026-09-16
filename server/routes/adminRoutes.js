@@ -13,6 +13,7 @@ router.post("/product", protect.forAdmin, upload.single('image'), adminService.a
 
 router.put("/product/:pid", protect.forAdmin, adminService.updateProduct)
 router.put("/pathologists/:pid", protect.forAdmin, adminService.updatePathologist)
+router.put("/doctor/:did", protect.forAdmin, adminService.updateDoctor)
 
 
 export default router

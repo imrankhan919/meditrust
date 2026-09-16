@@ -100,6 +100,10 @@ const explainPrescription = async (req, res) => {
 }
 
 
+
+
+
+
 const findMedicines = async (req, res) => {
 
     const pid = req.params.pid
@@ -107,6 +111,98 @@ const findMedicines = async (req, res) => {
     const products = await Product.find()
     const pathologists = await Pathologist.find()
     const prescription = await Prescription.findById(pid)
+
+    const MEDICINE_FOUNDER_PROMPT = `You are a medicine and pathology-test availability checker for a healthcare platform.
+
+You will receive THREE pieces of data in JSON:
+1. "products" — the pharmacy's inventory (id, name, description, price, stock, expiresOn, isActive)
+2. "pathologists" — labs/diagnostic centers with their specializations and fees
+3. "medicines" — a list of medicines extracted via OCR from a doctor's prescription (name, dosage, frequency, duration, notes)
+
+YOUR TASK:
+For each entry in "medicines", determine whether it is available in "products" using fuzzy/partial name matching (OCR text is often noisy — e.g. "O-claram-625" may match "Amoxyclav 625" or similar; match on best semantic/brand similarity, not exact string equality). Only mark a product as available if isActive is true, stock > 0, and it is not expired (compare expiresOn to today's date).
+
+If any prescription line looks like a lab test / diagnostic order rather than a medicine (e.g. "CBC", "CT Scan", "Blood Sugar"), match it against pathologists' "specialization" arrays instead, and list which labs offer it, their consultationFee, and availableDays/workingHours.
+
+OUTPUT FORMAT — return ONLY valid JSON, no preamble, no markdown fences:
+
+{
+  "medicines": [
+    {
+      "prescribed_name": "<name as it appeared on prescription>",
+      "matched_product_name": "<name from products, or null if no match found>",
+      "match_confidence": "high" | "medium" | "low" | "none",
+      "available": true | false,
+      "reason": "<short reason, e.g. 'in stock, active' / 'out of stock' / 'expired' / 'no matching product found'>",
+      "price": <number or null>,
+      "stock": <number or null>,
+      "dosage": "<from prescription, if any>",
+      "duration": "<from prescription, if any>"
+    }
+  ],
+  "tests": [
+    {
+      "prescribed_test": "<test name as extracted>",
+      "available_labs": [
+        {
+          "laboratoryName": "<string>",
+          "laboratoryAddress": "<string>",
+          "consultationFee": <number>,
+          "availableDays": [<strings>],
+          "workingHours": { "start": "<string>", "end": "<string>" }
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total_medicines_prescribed": <number>,
+    "medicines_available": <number>,
+    "medicines_unavailable": <number>,
+    "tests_prescribed": <number>,
+    "tests_with_available_labs": <number>
+  }
+}
+
+RULES:
+- Never invent a product, price, or lab that isn't in the provided data.
+- If a prescription entry's "notes" says it's crossed out or unclear, still attempt a match but flag match_confidence as "low" and add a note.
+- Be conservative: if you're not reasonably confident of a match, set matched_product_name to null and available to false rather than guessing.
+- Do not include any explanation outside the JSON object.
+
+Here is the data: ${{ products, pathologists, medicines: prescription.medicines }}
+`
+
+    try {
+
+        const response = await ai.models.generateContent({
+            model: "gemini-2.5-flash",
+            contents: [
+                {
+                    role: "user",
+                    parts: [
+                        { text: MEDICINE_FOUNDER_PROMPT },
+                    ],
+                },
+            ],
+            config: {
+                responseMimeType: "application/json",
+            },
+        });
+
+
+        const text = response.text; // property, not a function, in the new SDK
+        const data = JSON.parse(text);
+
+        res.json(data)
+
+
+    } catch (error) {
+        res.status(409)
+        throw new Error("Error In Getting Data From Server!")
+    }
+
+
+
 
     res.json({ products, pathologists, medicines: prescription.medicines })
 
