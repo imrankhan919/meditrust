@@ -137,7 +137,7 @@ const updateDoctor = async (req, res) => {
 
     const { isVerified } = req.body
 
-    const did = req.params.pid
+    const did = req.params.did
 
     const doctor = await Doctor.findByIdAndUpdate(did, { isVerified }, { new: true }).populate('user')
 

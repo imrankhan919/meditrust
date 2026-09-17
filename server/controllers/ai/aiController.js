@@ -50,7 +50,7 @@ const explainPrescription = async (req, res) => {
         const base64 = fileToBase64(req.file.path);
 
         const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
+            model: "gemini-3.6-flash",
             contents: [
                 {
                     role: "user",
@@ -175,7 +175,7 @@ Here is the data: ${{ products, pathologists, medicines: prescription.medicines 
     try {
 
         const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
+            model: "gemini-3.6-flash",
             contents: [
                 {
                     role: "user",
@@ -211,10 +211,65 @@ Here is the data: ${{ products, pathologists, medicines: prescription.medicines 
 }
 
 
+const chatWithAi = async (req, res) => {
+
+    const { text } = req.body
+
+    if (!text) {
+        res.status(409)
+        throw new Error("Please Fill All Details")
+    }
+
+    const SYSTEM_INSTRUCTION = `You are MediTrust's basic health guidance assistant. Rules you MUST follow:
+- Give only general, non-diagnostic health information.
+- Never provide a diagnosis and never recommend specific dosages.
+- Keep answers short and easy to understand.
+- Always suggest booking a real doctor on MediTrust for anything specific or urgent.
+- If the question is an emergency or serious symptom, urge seeking immediate professional care. here is my query : ${text}`
+
+    try {
+        const response = await ai.models.generateContent({
+            model: "gemini-3.6-flash",
+            contents: [
+                {
+                    role: "user",
+                    parts: [
+                        { text: SYSTEM_INSTRUCTION },
+                    ],
+                },
+            ],
+            config: {
+                responseMimeType: "application/json",
+            },
+        });
+
+
+        const text = response.text; // property, not a function, in the new SDK
+        const data = JSON.parse(text);
+
+        res.json(data)
+    } catch (error) {
+        console.log(error.message)
+        res.status(409)
+        throw new Error("Error In Getting Data From Server!")
+    }
+
+
+
+
+
+}
+
+
+
+
+
+
+
 
 
 const aiController = {
-    explainPrescription, findMedicines
+    explainPrescription, findMedicines, chatWithAi
 }
 
 export default aiController

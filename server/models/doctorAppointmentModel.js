@@ -13,7 +13,7 @@ const doctorAppointmentSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enums: ["pending", "delivered", "cancelled"],
+        enums: ["pending", "confirmed", "cancelled"],
         default: "pending"
     }
 }, {

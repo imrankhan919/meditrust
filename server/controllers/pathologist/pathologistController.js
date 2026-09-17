@@ -1,6 +1,6 @@
 import Pathologist from "../../models/pathologistModel.js"
-import PathologyAppointment from "../../models/pathologyAppointment.js"
-import PathologyTest from "../../models/pathologyTest.js"
+import PathologyAppointment from "../../models/pathologyAppointmentModel.js"
+import PathologyTest from "../../models/pathologyTestModel.js"
 import User from "../../models/userModel.js"
 
 const becomePathologist = async (req, res) => {

@@ -1,4 +1,4 @@
-import DoctorAppointment from "../../models/doctorAppointment"
+import DoctorAppointment from "../../models/doctorAppointmentModel.js"
 import Doctor from "../../models/doctorModel.js"
 import User from "../../models/userModel.js"
 
@@ -46,7 +46,7 @@ const getAllAppointments = async (req, res) => {
     }
 
     const doctor = await Doctor.findOne({ user: user._id })
-    const appointments = await DoctorAppointment.find({ doctor: doctor._id })
+    const appointments = await DoctorAppointment.find({ doctor: doctor._id }).populate('user')
 
     if (!appointments) {
         res.status(404)
@@ -69,7 +69,7 @@ const updateAppointment = async (req, res) => {
         throw new Error("Appointment Does Not Exist")
     }
 
-    const updatedAppointment = await DoctorAppointment.findByIdAndUpdate(appointmentId, req.body, { new: true })
+    const updatedAppointment = await DoctorAppointment.findByIdAndUpdate(appointmentId, req.body, { new: true }).populate("user").populate('doctor')
 
     if (!updatedAppointment) {
         res.status(409)
