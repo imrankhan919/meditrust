@@ -1,0 +1,307 @@
+import React, { useState } from 'react';
+import { 
+  Search, 
+  MapPin, 
+  Star, 
+  ShieldCheck, 
+  Calendar, 
+  Clock, 
+  Video, 
+  Building2, 
+  Award, 
+  SlidersHorizontal,
+  ArrowRight
+} from 'lucide-react';
+import Card from '../../components/common/Card';
+import Badge from '../../components/common/Badge';
+import Button from '../../components/common/Button';
+
+// ==========================================
+// MOCK DATA (Hardcoded for teaching purposes)
+// Later replace with: api.doctors.getAll({ specialty, search })
+// ==========================================
+
+const MOCK_SPECIALTIES = [
+  'All Specialties',
+  'Cardiology',
+  'Dermatology',
+  'Pediatrics',
+  'General Physician',
+  'Neurology',
+  'Orthopedics',
+  'Psychiatry',
+  'Gynecology',
+];
+
+const MOCK_DOCTORS = [
+  {
+    id: 'doc-1',
+    name: 'Dr. Sarah Jenkins, MD, FACC',
+    specialty: 'Cardiology',
+    qualifications: 'MD, Harvard Medical School • Board Certified Cardiologist',
+    experience: '14 years clinical experience',
+    hospital: 'Mount Sinai Heart Center, New York',
+    rating: 4.9,
+    reviewsCount: 382,
+    fee: '$95',
+    nextAvailable: 'Today, 3:30 PM',
+    consultationModes: ['Video Call', 'In-Clinic'],
+    languages: ['English', 'Spanish'],
+    image: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&q=80&w=400',
+    verified: true,
+  },
+  {
+    id: 'doc-2',
+    name: 'Dr. Marcus Vance, DO',
+    specialty: 'Dermatology',
+    qualifications: 'DO, Johns Hopkins Medicine • Clinical Dermatology Fellow',
+    experience: '11 years clinical experience',
+    hospital: 'Boston Skin & Laser Pavilion',
+    rating: 4.8,
+    reviewsCount: 260,
+    fee: '$85',
+    nextAvailable: 'Tomorrow, 10:00 AM',
+    consultationModes: ['Video Call', 'In-Clinic'],
+    languages: ['English'],
+    image: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&q=80&w=400',
+    verified: true,
+  },
+  {
+    id: 'doc-3',
+    name: 'Dr. Elena Rostova, MD, FAAP',
+    specialty: 'Pediatrics',
+    qualifications: 'MD, Columbia University Vagelos College of Physicians',
+    experience: '16 years clinical experience',
+    hospital: "Children's Health Pavilion, Chicago",
+    rating: 5.0,
+    reviewsCount: 440,
+    fee: '$90',
+    nextAvailable: 'Today, 5:15 PM',
+    consultationModes: ['Video Call'],
+    languages: ['English', 'Russian'],
+    image: 'https://images.unsplash.com/photo-1594824813576-9694c979d50a?auto=format&fit=crop&q=80&w=400',
+    verified: true,
+  },
+  {
+    id: 'doc-4',
+    name: 'Dr. David Kim, MD, PhD',
+    specialty: 'Neurology',
+    qualifications: 'MD/PhD, Stanford School of Medicine',
+    experience: '12 years clinical experience',
+    hospital: 'Metropolitan Brain Institute, San Francisco',
+    rating: 4.9,
+    reviewsCount: 310,
+    fee: '$110',
+    nextAvailable: 'Wed, 11:30 AM',
+    consultationModes: ['Video Call', 'In-Clinic'],
+    languages: ['English', 'Korean'],
+    image: 'https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&q=80&w=400',
+    verified: true,
+  },
+  {
+    id: 'doc-5',
+    name: 'Dr. Amanda Thorne, MD',
+    specialty: 'General Physician',
+    qualifications: 'MD, Yale School of Medicine • Family Practice',
+    experience: '9 years clinical experience',
+    hospital: 'MediTrust Virtual Health Center',
+    rating: 4.9,
+    reviewsCount: 512,
+    fee: '$65',
+    nextAvailable: 'In 20 Mins',
+    consultationModes: ['Video Call'],
+    languages: ['English', 'French'],
+    image: 'https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&q=80&w=400',
+    verified: true,
+  },
+  {
+    id: 'doc-6',
+    name: 'Dr. Robert Chen, MD, FAAOS',
+    specialty: 'Orthopedics',
+    qualifications: 'MD, UCLA David Geffen School of Medicine',
+    experience: '18 years clinical experience',
+    hospital: 'St. Jude Sports & Joint Institute',
+    rating: 4.8,
+    reviewsCount: 295,
+    fee: '$120',
+    nextAvailable: 'Thu, 2:00 PM',
+    consultationModes: ['In-Clinic'],
+    languages: ['English', 'Mandarin'],
+    image: 'https://images.unsplash.com/photo-1582750433449-648ed127bb54?auto=format&fit=crop&q=80&w=400',
+    verified: true,
+  },
+];
+
+export default function DoctorListingPage({ onNavigate }) {
+  const [selectedSpecialty, setSelectedSpecialty] = useState('All Specialties');
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      
+      {/* Header Banner */}
+      <div className="bg-gradient-to-r from-teal-800 via-teal-700 to-sky-900 rounded-3xl p-6 sm:p-10 text-white relative overflow-hidden shadow-lg">
+        <div className="max-w-2xl space-y-3 relative z-10">
+          <Badge variant="info" size="sm" className="bg-white/20 text-white border-white/30">
+            Certified Telehealth & In-Person Care
+          </Badge>
+          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
+            Consult Top Medical Specialists
+          </h1>
+          <p className="text-teal-100 text-sm sm:text-base leading-relaxed">
+            Connect with verified board-certified physicians for immediate video visits or in-person clinic appointments.
+          </p>
+          <div className="pt-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onNavigate('doctor-apply')}
+              className="bg-white/10 hover:bg-white/20 text-white border-white/30"
+            >
+              Are you a licensed doctor? Join Our Network →
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Search and Filter Row */}
+      <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-xs flex flex-col md:flex-row items-center gap-3">
+        <div className="relative flex-1 w-full">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <input
+            type="text"
+            placeholder="Search by doctor name, clinical condition, or hospital..."
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 text-sm placeholder-slate-400 focus:outline-none focus:border-teal-500"
+          />
+        </div>
+
+        <div className="relative w-full md:w-64">
+          <MapPin className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <input
+            type="text"
+            placeholder="City or State (e.g. New York)"
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 text-sm placeholder-slate-400 focus:outline-none focus:border-teal-500"
+          />
+        </div>
+
+        <Button variant="primary" size="md" className="w-full md:w-auto">
+          Search Doctors
+        </Button>
+      </div>
+
+      {/* Specialty Filter Chips */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-2 no-scrollbar">
+        {MOCK_SPECIALTIES.map((spec) => {
+          const isActive = selectedSpecialty === spec;
+          return (
+            <button
+              key={spec}
+              onClick={() => setSelectedSpecialty(spec)}
+              type="button"
+              className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-200 ${
+                isActive
+                  ? 'bg-teal-600 text-white shadow-xs'
+                  : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
+              }`}
+            >
+              {spec}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Doctors Grid */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+            Available Specialists ({MOCK_DOCTORS.length})
+          </span>
+          <span className="text-xs text-teal-700 font-semibold flex items-center gap-1">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            Live Doctors Ready Now
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {MOCK_DOCTORS.map((doc) => (
+            <Card key={doc.id} hoverEffect className="p-5 flex flex-col justify-between h-full">
+              <div>
+                
+                {/* Doctor Photo & Header */}
+                <div className="flex items-start gap-4">
+                  <div className="relative w-20 h-20 rounded-2xl overflow-hidden bg-slate-100 shrink-0 border border-slate-200">
+                    <img src={doc.image} alt={doc.name} className="w-full h-full object-cover object-top" />
+                    {doc.verified && (
+                      <div className="absolute bottom-1 right-1 bg-teal-600 text-white p-0.5 rounded-full">
+                        <ShieldCheck className="w-3.5 h-3.5" />
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-1">
+                      <Badge variant="info" size="sm">
+                        {doc.specialty}
+                      </Badge>
+                      <span className="inline-flex items-center gap-1 text-xs font-bold text-amber-600">
+                        <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                        {doc.rating}
+                        <span className="text-slate-400 text-[10px]">({doc.reviewsCount})</span>
+                      </span>
+                    </div>
+
+                    <h3 className="font-bold text-slate-900 text-base mt-1 truncate">
+                      {doc.name}
+                    </h3>
+                    <p className="text-xs text-slate-500">{doc.experience}</p>
+                  </div>
+                </div>
+
+                {/* Hospital & Credentials */}
+                <div className="mt-4 pt-3 border-t border-slate-100 space-y-2 text-xs text-slate-600">
+                  <div className="flex items-center gap-2">
+                    <Building2 className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                    <span className="truncate">{doc.hospital}</span>
+                  </div>
+
+                  {/* Consultation Modes */}
+                  <div className="flex items-center gap-2">
+                    <Video className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                    <span>Modes: {doc.consultationModes.join(' & ')}</span>
+                  </div>
+                </div>
+
+                {/* Slot Badge */}
+                <div className="mt-3 py-2 px-3 rounded-xl bg-teal-50/70 border border-teal-100 text-xs flex items-center justify-between text-teal-800">
+                  <span className="flex items-center gap-1.5 font-medium">
+                    <Clock className="w-3.5 h-3.5 text-teal-600" />
+                    Next Slot:
+                  </span>
+                  <strong className="font-bold">{doc.nextAvailable}</strong>
+                </div>
+
+              </div>
+
+              {/* Fee & Action Button */}
+              <div className="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] text-slate-400 block uppercase">Consult Fee</span>
+                  <span className="text-lg font-black text-slate-900">{doc.fee}</span>
+                </div>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={() => onNavigate('doctor-booking')}
+                  icon={Calendar}
+                >
+                  Book Appointment
+                </Button>
+              </div>
+
+            </Card>
+          ))}
+        </div>
+      </div>
+
+    </div>
+  );
+}
