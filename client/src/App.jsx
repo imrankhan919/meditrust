@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Toaster } from 'react-hot-toast';
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
 import {
   useQuery,
@@ -46,8 +47,15 @@ export default function App() {
         <Navbar />
         <Routes>
           <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/pharmacy" element={<ProductListingPage />} />
+          <Route path="/doctors" element={<DoctorListingPage />} />
+          <Route path="/lab" element={<LabTestListingPage />} />
+          <Route path="/auth/dashboard" element={<UserDashboardPage />} />
         </Routes>
         <Footer />
+        <Toaster />
       </Router>
     </QueryClientProvider>
   );

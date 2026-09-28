@@ -1,28 +1,30 @@
-import React, { useState } from 'react';
-import { 
-  User, 
-  Package, 
-  Calendar, 
-  FlaskConical, 
-  FileText, 
-  Settings, 
-  Camera, 
-  Mail, 
-  Phone, 
-  Heart, 
-  ShieldCheck, 
-  Download, 
-  Bell, 
-  KeyRound, 
-  Save, 
-  CheckCircle2, 
-  AlertTriangle 
+import React, { useEffect, useState } from 'react';
+import {
+  User,
+  Package,
+  Calendar,
+  FlaskConical,
+  FileText,
+  Settings,
+  Camera,
+  Mail,
+  Phone,
+  Heart,
+  ShieldCheck,
+  Download,
+  Bell,
+  KeyRound,
+  Save,
+  CheckCircle2,
+  AlertTriangle
 } from 'lucide-react';
 import Card from '../../components/common/Card';
 import Badge from '../../components/common/Badge';
 import Input from '../../components/common/Input';
 import Button from '../../components/common/Button';
 import Tabs from '../../components/common/Tabs';
+import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 
 // ==========================================
 // MOCK DATA (Hardcoded for teaching purposes)
@@ -63,6 +65,13 @@ const MOCK_PRESCRIPTIONS = [
 ];
 
 export default function UserDashboardPage({ onNavigate }) {
+
+  const { user } = useSelector(state => state.auth)
+
+  const navigate = useNavigate()
+
+
+
   const [activeTab, setActiveTab] = useState('profile');
   const [saveSuccess, setSaveSuccess] = useState(false);
 
@@ -80,13 +89,22 @@ export default function UserDashboardPage({ onNavigate }) {
     setTimeout(() => setSaveSuccess(false), 3000);
   };
 
+
+  useEffect(() => {
+    if (!user) {
+      navigate("/login")
+    }
+  }, [user])
+
+
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-      
+
       {/* Patient Profile Header Card */}
       <div className="bg-gradient-to-r from-teal-900 via-teal-800 to-slate-900 rounded-3xl p-6 sm:p-8 text-white relative overflow-hidden shadow-lg">
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 relative z-10">
-          
+
           {/* Avatar with edit badge */}
           <div className="relative group shrink-0">
             <img

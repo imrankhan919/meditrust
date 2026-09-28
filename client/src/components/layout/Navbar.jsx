@@ -15,6 +15,7 @@ import {
   PhoneCall
 } from 'lucide-react';
 import { useSelector, useDispatch } from 'react-redux'
+import { useNavigate } from "react-router-dom"
 import Button from '../common/Button';
 
 export default function Navbar({ currentView, onNavigate }) {
@@ -22,12 +23,15 @@ export default function Navbar({ currentView, onNavigate }) {
 
   const { user } = useSelector(state => state.auth)
 
+  const navigate = useNavigate()
 
+  const handleNavigate = (route) => {
+    navigate(route)
+  }
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navLinks = user ? [
-    { id: 'landing', label: 'Home' },
     { id: 'pharmacy', label: 'Pharmacy', icon: Pill },
     { id: 'doctors', label: 'Doctors', icon: Calendar },
     { id: 'lab', label: 'Lab Tests', icon: FlaskConical },
@@ -36,7 +40,6 @@ export default function Navbar({ currentView, onNavigate }) {
     { id: 'dashboard', label: 'Dashboard', icon: User },
     { id: 'admin', label: 'Admin', icon: ShieldAlert },
   ] : [
-    { id: 'landing', label: 'Home' },
     { id: 'pharmacy', label: 'Pharmacy', icon: Pill },
     { id: 'doctors', label: 'Doctors', icon: Calendar },
     { id: 'lab', label: 'Lab Tests', icon: FlaskConical },
@@ -71,7 +74,7 @@ export default function Navbar({ currentView, onNavigate }) {
 
           {/* Logo */}
           <div
-            onClick={() => handleNav('landing')}
+            onClick={() => handleNavigate("/")}
             className="flex items-center gap-2.5 cursor-pointer group"
           >
             <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-teal-600 to-teal-400 flex items-center justify-center text-white shadow-md shadow-teal-500/20 group-hover:scale-105 transition-transform duration-200">
@@ -95,7 +98,7 @@ export default function Navbar({ currentView, onNavigate }) {
               return (
                 <button
                   key={link.id}
-                  onClick={() => handleNav(link.id)}
+                  onClick={() => handleNavigate("/" + link.id)}
                   type="button"
                   className={`px-3 py-2 rounded-xl text-sm font-medium transition-all duration-200 flex items-center gap-1.5 ${isActive
                     ? 'bg-teal-50 text-teal-800 font-semibold'
@@ -125,14 +128,14 @@ export default function Navbar({ currentView, onNavigate }) {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => handleNav('login')}
+                    onClick={() => handleNavigate("/login")}
                   >
                     Sign In
                   </Button>
                   <Button
                     variant="primary"
                     size="sm"
-                    onClick={() => handleNav('register')}
+                    onClick={() => handleNavigate("/register")}
                   >
                     Create Account
                   </Button>

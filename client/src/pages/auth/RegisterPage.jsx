@@ -1,34 +1,82 @@
-import React, { useState } from 'react';
-import { 
-  HeartPulse, 
-  User, 
-  Mail, 
-  Lock, 
-  Phone, 
-  Eye, 
-  EyeOff, 
-  ShieldCheck, 
-  CheckCircle2 
+import React, { useEffect, useState } from 'react';
+import {
+  HeartPulse,
+  User,
+  Mail,
+  Lock,
+  Phone,
+  Eye,
+  EyeOff,
+  ShieldCheck,
+  CheckCircle2
 } from 'lucide-react';
 import Card from '../../components/common/Card';
 import Input from '../../components/common/Input';
 import Button from '../../components/common/Button';
-
-// ==========================================
-// MOCK DATA (Hardcoded for teaching purposes)
-// Later replace with: api.auth.register({ name, email, phone, password })
-// ==========================================
+import { useMutation } from '@tanstack/react-query';
+import authService from '../../services/authService';
+import Loader from '../../components/common/Loader';
+import toast from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
 
 export default function RegisterPage({ onNavigate }) {
+
+  const { mutate, data, isPending, isSuccess, isError, error } = useMutation({ mutationFn: (payload) => authService.registerUser(payload) })
+
+  const navigate = useNavigate()
+
   const [showPassword, setShowPassword] = useState(false);
+
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    password: ""
+  })
+
+  const { name, email, phone, password } = formData
+
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    })
+  }
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    mutate(formData)
+  }
+
+
+  useEffect(() => {
+
+    if (data) {
+      toast.success(data.message)
+      navigate("/login")
+    }
+
+    if (isError && isError) {
+      toast.error(error.response.data.message)
+    }
+
+  }, [isError, error, data])
+
+
+
+  if (isPending) {
+    return <Loader />
+  }
+
+
 
   return (
     <div className="min-h-[85vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-slate-50 via-teal-50/20 to-white">
       <div className="w-full max-w-md space-y-6">
-        
+
         {/* Brand header */}
         <div className="text-center space-y-2">
-          <div 
+          <div
             onClick={() => onNavigate('landing')}
             className="inline-flex items-center gap-2 cursor-pointer group"
           >
@@ -46,14 +94,16 @@ export default function RegisterPage({ onNavigate }) {
 
         {/* Register Card */}
         <Card className="p-8 shadow-xl border-slate-200/80">
-          <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
-            
+          <form className="space-y-4" onSubmit={handleSubmit}>
+
             <Input
               label="Full Legal Name"
               type="text"
               placeholder="Sarah Connor"
               icon={User}
-              defaultValue="Sarah Connor"
+              defaultValue={name}
+              name="name"
+              onChange={handleChange}
               required
             />
 
@@ -62,7 +112,9 @@ export default function RegisterPage({ onNavigate }) {
               type="email"
               placeholder="sarah@example.com"
               icon={Mail}
-              defaultValue="sarah.connor@healthmail.com"
+              defaultValue={email}
+              name="email"
+              onChange={handleChange}
               required
             />
 
@@ -71,7 +123,9 @@ export default function RegisterPage({ onNavigate }) {
               type="tel"
               placeholder="+1 (555) 000-0000"
               icon={Phone}
-              defaultValue="+1 (555) 234-5678"
+              defaultValue={phone}
+              name="phone"
+              onChange={handleChange}
               required
             />
 
@@ -81,7 +135,9 @@ export default function RegisterPage({ onNavigate }) {
                 type={showPassword ? 'text' : 'password'}
                 placeholder="At least 8 characters"
                 icon={Lock}
-                defaultValue="SecureHealthcare2026!"
+                defaultValue={password}
+                name="password"
+                onChange={handleChange}
                 required
                 rightElement={
                   <button
@@ -98,9 +154,23 @@ export default function RegisterPage({ onNavigate }) {
             {/* Password strength visual indicator */}
             <div className="space-y-1.5 pt-1">
               <div className="flex gap-1 h-1.5">
-                <div className="w-1/3 rounded-full bg-emerald-500" />
-                <div className="w-1/3 rounded-full bg-emerald-500" />
-                <div className="w-1/3 rounded-full bg-emerald-500" />
+                {
+                  password.length <= 4 ? (
+                    <div className="w-1/3 rounded-full bg-red-500" />
+
+                  ) : password.length <= 7 ? (
+                    <>
+                      <div className="w-1/3 rounded-full bg-yellow-500" />
+                      <div className="w-1/3 rounded-full bg-yellow-500" />
+                    </>
+                  ) : (
+                    <>
+                      <div className="w-1/3 rounded-full bg-emerald-500" />
+                      <div className="w-1/3 rounded-full bg-emerald-500" />
+                      <div className="w-1/3 rounded-full bg-emerald-500" />
+                    </>
+                  )
+                }
               </div>
               <p className="text-[11px] text-emerald-600 font-medium">Strong password meets HIPAA security standards</p>
             </div>
@@ -124,7 +194,7 @@ export default function RegisterPage({ onNavigate }) {
               variant="primary"
               size="lg"
               className="w-full justify-center shadow-md shadow-teal-600/20 mt-4"
-              onClick={() => onNavigate('dashboard')}
+              type="submit"
             >
               Complete Registration
             </Button>

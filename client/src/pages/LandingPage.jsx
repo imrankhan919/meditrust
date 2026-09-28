@@ -22,7 +22,9 @@ import Card from '../components/common/Card';
 import Badge from '../components/common/Badge';
 import Button from '../components/common/Button';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import productServices from '../services/productServices';
+import productServices from '../services/medicalService';
+import medicalService from '../services/medicalService';
+import Loader from '../components/common/Loader';
 
 
 const MOCK_CATEGORIES = [
@@ -156,20 +158,22 @@ const MOCK_TESTIMONIALS = [
 
 export default function LandingPage({ onNavigate }) {
 
-  // Access the client
-  const queryClient = useQueryClient()
 
-  const { data, isLoading, isSuccess, isError, error } = useQuery({ queryKey: ['items'], queryFn: productServices.fetchProductsAndDoctors })
+  const { data, isLoading, isSuccess, isError, error } = useQuery({ queryKey: ['items'], queryFn: medicalService.fetchData })
 
 
   if (isLoading) {
+    return <Loader />
+  }
+
+
+  if (isError) {
     return (
       <div className="h-screen">
-        <h1 className="text-center">Loading....</h1>
+        <h1 className="text-center">{error.message || "Something Went Wrong!!"}</h1>
       </div>
     )
   }
-
 
 
   return (
