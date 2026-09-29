@@ -17,6 +17,7 @@ import {
 import { useSelector, useDispatch } from 'react-redux'
 import { useNavigate } from "react-router-dom"
 import Button from '../common/Button';
+import { logoutUser } from '../../features/auth/authSlice';
 
 export default function Navbar({ currentView, onNavigate }) {
 
@@ -24,6 +25,14 @@ export default function Navbar({ currentView, onNavigate }) {
   const { user } = useSelector(state => state.auth)
 
   const navigate = useNavigate()
+  const dispatch = useDispatch()
+
+  const handleLogout = () => {
+    localStorage.removeItem('user')
+    dispatch(logoutUser())
+    navigate("/login")
+  }
+
 
   const handleNavigate = (route) => {
     navigate(route)
@@ -35,10 +44,11 @@ export default function Navbar({ currentView, onNavigate }) {
     { id: 'pharmacy', label: 'Pharmacy', icon: Pill },
     { id: 'doctors', label: 'Doctors', icon: Calendar },
     { id: 'lab', label: 'Lab Tests', icon: FlaskConical },
-    { id: 'ai-hub', label: 'AI Health', icon: Sparkles, isAi: true },
-    { id: 'orders', label: 'My Orders', icon: Package },
-    { id: 'dashboard', label: 'Dashboard', icon: User },
-    { id: 'admin', label: 'Admin', icon: ShieldAlert },
+    { id: 'auth/ai-hub', label: 'AI Health', icon: Sparkles, isAi: true },
+    { id: 'auth/orders', label: 'My Orders', icon: Package },
+    user.userType === "ADMIN" ? { id: 'auth/admin', label: 'Admin', icon: ShieldAlert } :
+      { id: 'auth/dashboard', label: 'Dashboard', icon: User },
+    ,
   ] : [
     { id: 'pharmacy', label: 'Pharmacy', icon: Pill },
     { id: 'doctors', label: 'Doctors', icon: Calendar },
@@ -122,6 +132,18 @@ export default function Navbar({ currentView, onNavigate }) {
           {/* Auth & CTA Buttons */}
 
           {
+            user && (
+              <Button
+                variant="danger"
+                size="md"
+                onClick={handleLogout}
+              >
+                Logout
+              </Button>
+            )
+          }
+
+          {
             !user && (
               <>
                 <div className="hidden sm:flex items-center gap-2.5">
@@ -193,6 +215,10 @@ export default function Navbar({ currentView, onNavigate }) {
                 </button>
               );
             })}
+
+
+
+
           </div>
 
           <div className="pt-4 grid grid-cols-2 gap-2">

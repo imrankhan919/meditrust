@@ -23,27 +23,15 @@ import Badge from '../../components/common/Badge';
 import Input from '../../components/common/Input';
 import Button from '../../components/common/Button';
 import Tabs from '../../components/common/Tabs';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import authService from '../../services/authService';
+import Loader from '../../components/common/Loader';
+import { getProfile } from '../../features/auth/authSlice';
+import toast from "react-hot-toast"
+import ProfileForm from '../../components/ProfileForm';
 
-// ==========================================
-// MOCK DATA (Hardcoded for teaching purposes)
-// Later replace with: api.user.getProfile()
-// ==========================================
-
-const MOCK_PROFILE = {
-  patientId: 'PT-992014',
-  fullName: 'Sarah Connor',
-  email: 'sarah.connor@healthmail.com',
-  phone: '+1 (555) 234-5678',
-  dateOfBirth: '1988-06-14',
-  gender: 'Female',
-  bloodGroup: 'O Positive (O+)',
-  emergencyContact: 'John Connor (Son) • +1 (555) 987-6543',
-  address: '742 Evergreen Terrace, Springfield, OR 97477',
-  allergies: ['Penicillin (Mild rash)', 'Sulfa Drugs', 'Latex'],
-  avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=300',
-};
 
 const MOCK_PRESCRIPTIONS = [
   {
@@ -68,8 +56,10 @@ export default function UserDashboardPage({ onNavigate }) {
 
   const { user } = useSelector(state => state.auth)
 
-  const navigate = useNavigate()
+  const { data, isLoading, isSuccess, isError, error } = useQuery({ queryKey: ['user', user.token], queryFn: (token) => authService.getMyProfile(token) })
 
+  const navigate = useNavigate()
+  const dispatch = useDispatch()
 
 
   const [activeTab, setActiveTab] = useState('profile');
@@ -91,10 +81,39 @@ export default function UserDashboardPage({ onNavigate }) {
 
 
   useEffect(() => {
+
+    if (data && isSuccess) {
+      dispatch(getProfile(data))
+    }
+
+    if (isError && error) {
+      toast.error(error.response.data.message)
+    }
+
     if (!user) {
       navigate("/login")
     }
-  }, [user])
+
+
+  }, [data, isError, error, isSuccess])
+
+
+
+
+
+  if (isLoading) {
+    return <Loader />
+  }
+
+
+  if (isError) {
+    return (
+      <div className="h-screen">
+        <h1 className="text-center">{error.message || "Something Went Wrong!!"}</h1>
+      </div>
+    )
+  }
+
 
 
 
@@ -108,8 +127,8 @@ export default function UserDashboardPage({ onNavigate }) {
           {/* Avatar with edit badge */}
           <div className="relative group shrink-0">
             <img
-              src={MOCK_PROFILE.avatar}
-              alt={MOCK_PROFILE.fullName}
+              src="https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=original"
+              alt={user.name}
               className="w-24 h-24 rounded-2xl object-cover border-4 border-white/20 shadow-xl"
             />
             <button
@@ -123,29 +142,20 @@ export default function UserDashboardPage({ onNavigate }) {
 
           <div className="text-center sm:text-left space-y-1.5 flex-1">
             <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
-              <h1 className="text-2xl font-extrabold tracking-tight">{MOCK_PROFILE.fullName}</h1>
+              <h1 className="text-2xl font-extrabold tracking-tight">{user.name}</h1>
               <Badge variant="success" size="sm" dot>
-                Verified Patient
+                {user.userType}
               </Badge>
               <span className="text-xs text-teal-200/80 font-mono bg-teal-950/60 px-2 py-0.5 rounded border border-teal-700/50">
-                {MOCK_PROFILE.patientId}
+                {user._id}
               </span>
             </div>
 
             <p className="text-xs text-teal-100/90 flex flex-wrap items-center justify-center sm:justify-start gap-4 pt-1">
-              <span>{MOCK_PROFILE.email}</span>
+              <span>{user.email}</span>
               <span>•</span>
-              <span>{MOCK_PROFILE.phone}</span>
+              <span>{user.phone}</span>
             </p>
-
-            <div className="pt-2 flex flex-wrap items-center justify-center sm:justify-start gap-2">
-              <span className="text-xs bg-white/10 px-2.5 py-1 rounded-lg border border-white/10 text-white font-medium">
-                Blood Group: <strong className="text-teal-300">{MOCK_PROFILE.bloodGroup}</strong>
-              </span>
-              <span className="text-xs bg-white/10 px-2.5 py-1 rounded-lg border border-white/10 text-white font-medium">
-                Emergency: <strong className="text-teal-300">{MOCK_PROFILE.emergencyContact}</strong>
-              </span>
-            </div>
           </div>
 
         </div>
@@ -172,54 +182,9 @@ export default function UserDashboardPage({ onNavigate }) {
 
       {/* Tab 1: Profile Info Form */}
       {activeTab === 'profile' && (
-        <Card className="p-8 space-y-6">
-          <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-            <div>
-              <h2 className="text-lg font-bold text-slate-900">Personal Health Profile</h2>
-              <p className="text-xs text-slate-500">Edit demographic and medical contact details</p>
-            </div>
-            <Button variant="primary" size="sm" onClick={handleSave} icon={Save}>
-              Save Changes
-            </Button>
-          </div>
 
-          <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Input label="Full Name" defaultValue={MOCK_PROFILE.fullName} icon={User} required />
-              <Input label="Date of Birth" type="date" defaultValue={MOCK_PROFILE.dateOfBirth} required />
-            </div>
+        user.address && <ProfileForm user={user} />
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Input label="Email Address" type="email" defaultValue={MOCK_PROFILE.email} icon={Mail} required />
-              <Input label="Phone Number" type="tel" defaultValue={MOCK_PROFILE.phone} icon={Phone} required />
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Input label="Blood Type" defaultValue={MOCK_PROFILE.bloodGroup} />
-              <Input label="Emergency Contact (Name & Phone)" defaultValue={MOCK_PROFILE.emergencyContact} required />
-            </div>
-
-            <Input label="Default Delivery Address" defaultValue={MOCK_PROFILE.address} required />
-
-            {/* Drug Allergies */}
-            <div className="pt-2 space-y-2">
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider">
-                Known Drug Allergies & Clinical Alerts
-              </label>
-              <div className="flex flex-wrap gap-2">
-                {MOCK_PROFILE.allergies.map((all, i) => (
-                  <span key={i} className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-rose-50 text-rose-700 text-xs font-semibold border border-rose-200">
-                    <AlertTriangle className="w-3.5 h-3.5 text-rose-500" />
-                    {all}
-                  </span>
-                ))}
-                <button type="button" className="px-3 py-1 rounded-xl border border-dashed border-slate-300 text-slate-500 text-xs hover:border-slate-400">
-                  + Add Allergy Tag
-                </button>
-              </div>
-            </div>
-          </form>
-        </Card>
       )}
 
       {/* Tab 2: Orders Redirect */}
