@@ -56,7 +56,7 @@ export default function UserDashboardPage({ onNavigate }) {
 
   const { user } = useSelector(state => state.auth)
 
-  const { data, isLoading, isSuccess, isError, error } = useQuery({ queryKey: ['user', user.token], queryFn: (token) => authService.getMyProfile(token) })
+  const { data, isLoading, isSuccess, isError, error } = useQuery({ queryKey: ['user', user?.token], queryFn: (token) => authService.getMyProfile(token) })
 
   const navigate = useNavigate()
   const dispatch = useDispatch()

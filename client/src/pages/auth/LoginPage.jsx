@@ -56,8 +56,13 @@ export default function LoginPage({ onNavigate }) {
     if (data && isSuccess) {
       toast.success("You have been logged in")
       dispatch(register(data))
-      navigate("/auth/dashboard")
+      if (data.userType === "ADMIN") {
+        navigate("/auth/admin")
+      } else {
+        navigate("/auth/dashboard")
+      }
     }
+
 
     if (isError && isError) {
       toast.error(error.response.data.message)
