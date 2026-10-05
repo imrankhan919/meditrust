@@ -63,20 +63,24 @@ export default function Navbar({ currentView, onNavigate }) {
   return (
     <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-100 transition-all">
       {/* Top micro emergency & announcement bar */}
-      <div className="bg-gradient-to-r from-teal-900 via-teal-800 to-slate-900 text-teal-100 text-xs py-1.5 px-4 sm:px-6">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="font-medium">24/7 Emergency Health Line:</span>
-            <span className="font-bold text-white tracking-wide">1-800-MEDITRUST</span>
+      {
+        !user.userType === "ADMIN" && (
+          <div className="bg-gradient-to-r from-teal-900 via-teal-800 to-slate-900 text-teal-100 text-xs py-1.5 px-4 sm:px-6">
+            <div className="max-w-7xl mx-auto flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="font-medium">24/7 Emergency Health Line:</span>
+                <span className="font-bold text-white tracking-wide">1-800-MEDITRUST</span>
+              </div>
+              <div className="hidden md:flex items-center gap-4 text-[11px] text-teal-200/80">
+                <span>✓ 100% Genuine Medicines</span>
+                <span>✓ Verified Medical Specialists</span>
+                <span>✓ NABL Certified Labs</span>
+              </div>
+            </div>
           </div>
-          <div className="hidden md:flex items-center gap-4 text-[11px] text-teal-200/80">
-            <span>✓ 100% Genuine Medicines</span>
-            <span>✓ Verified Medical Specialists</span>
-            <span>✓ NABL Certified Labs</span>
-          </div>
-        </div>
-      </div>
+        )
+      }
 
       {/* Main navigation bar */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

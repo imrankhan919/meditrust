@@ -4,6 +4,7 @@ import Product from "../../models/productModel.js"
 import User from "../../models/userModel.js"
 import Pathologist from "../../models/pathologistModel.js"
 import Doctor from "../../models/doctorModel.js"
+import Order from "../../models/orderModel.js"
 
 const getAllUsers = async (req, res) => {
     const users = await User.find()
@@ -14,6 +15,31 @@ const getAllUsers = async (req, res) => {
     }
 
     res.status(200).json(users)
+
+}
+
+const getAllOrders = async (req, res) => {
+    const orders = await Order.find()
+
+    if (!orders) {
+        res.status(404)
+        throw new Error("Orders Not Found!")
+    }
+
+    res.status(200).json(orders)
+
+}
+
+
+const getAllDoctors = async (req, res) => {
+    const doctors = await Doctor.find()
+
+    if (!doctors) {
+        res.status(404)
+        throw new Error("doctors Not Found!")
+    }
+
+    res.status(200).json(doctors)
 
 }
 
@@ -164,7 +190,9 @@ const adminService = {
     updateProduct,
     getAllPathologists,
     updatePathologist,
-    updateDoctor
+    updateDoctor,
+    getAllOrders,
+    getAllDoctors
 }
 
 export default adminService

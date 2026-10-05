@@ -1,21 +1,21 @@
-import React, { useState } from 'react';
-import { 
-  Users, 
-  Package, 
-  Stethoscope, 
-  FlaskConical, 
-  ShoppingBag, 
-  Calendar, 
-  DollarSign, 
-  TrendingUp, 
-  Search, 
-  Plus, 
-  Filter, 
-  Edit, 
-  Trash2, 
-  CheckCircle2, 
-  XCircle, 
-  ShieldCheck, 
+import React, { useEffect, useState } from 'react';
+import {
+  Users,
+  Package,
+  Stethoscope,
+  FlaskConical,
+  ShoppingBag,
+  Calendar,
+  DollarSign,
+  TrendingUp,
+  Search,
+  Plus,
+  Filter,
+  Edit,
+  Trash2,
+  CheckCircle2,
+  XCircle,
+  ShieldCheck,
   MoreVertical,
   ChevronDown
 } from 'lucide-react';
@@ -25,18 +25,18 @@ import Button from '../../components/common/Button';
 import Sidebar from '../../components/common/Sidebar';
 import AddProductModal from './AddProductModal';
 import VerificationModal from './VerificationModal';
+import { useQuery } from '@tanstack/react-query';
+import adminService from '../../services/adminService';
+import { useSelector } from 'react-redux';
+import toast from 'react-hot-toast';
+import Loader from '../../components/common/Loader';
+
 
 // ==========================================
 // MOCK DATA (Hardcoded for teaching purposes)
 // Later replace with: api.admin.getDashboardMetrics()
 // ==========================================
 
-const MOCK_STATS = [
-  { id: 'revenue', label: 'Total Revenue', value: '$184,500', change: '+14.2% vs last month', icon: DollarSign, color: 'text-emerald-600 bg-emerald-50' },
-  { id: 'orders', label: 'Total Orders', value: '3,820', change: '+8.1% vs last month', icon: ShoppingBag, color: 'text-teal-600 bg-teal-50' },
-  { id: 'doctors', label: 'Active Doctors', value: '480', change: '+24 new this week', icon: Stethoscope, color: 'text-indigo-600 bg-indigo-50' },
-  { id: 'users', label: 'Total Registered Users', value: '12,450', change: '+18.5% year-to-date', icon: Users, color: 'text-sky-600 bg-sky-50' },
-];
 
 const MOCK_USERS_DATA = [
   { id: 'usr-1', name: 'Sarah Connor', email: 'sarah.connor@healthmail.com', role: 'Patient', joined: 'Jan 12, 2026', orders: 4, status: 'Active', badgeVariant: 'success' },
@@ -81,6 +81,10 @@ const MOCK_APPOINTMENTS_DATA = [
 ];
 
 export default function AdminDashboardPage({ onNavigate }) {
+
+  const { user } = useSelector(state => state.auth)
+
+
   const [activeSection, setActiveSection] = useState('products');
   const [isAddProductOpen, setIsAddProductOpen] = useState(false);
   const [verificationTarget, setVerificationTarget] = useState(null);
@@ -94,9 +98,41 @@ export default function AdminDashboardPage({ onNavigate }) {
     { id: 'users', label: 'Registered Users', icon: Users, badge: '12k' },
   ];
 
+  const { data, isLoading, isSuccess, isError, error } = useQuery({ queryKey: ["items"], queryFn: () => adminService.fetchAllAdminData(user.token) })
+
+  let verifiedDoctors = data?.doctors.filter(doc => doc.isVerified).length
+  let totalOrders = data?.orders.filter(order => order.status !== "cancelled").length
+  let verifiedPathologists = data?.pathologists.filter(path => path.isVerified).length
+
+  const MOCK_STATS = [
+    { id: 'revenue', label: 'Total Revenue', value: '$184,500', change: '+14.2% vs last month', icon: DollarSign, color: 'text-emerald-600 bg-emerald-50' },
+    { id: 'orders', label: 'Total Orders', value: totalOrders, change: '+8.1% vs last month', icon: ShoppingBag, color: 'text-teal-600 bg-teal-50' },
+    { id: 'doctors', label: 'Verified Doctors', value: verifiedDoctors, change: '+24 new this week', icon: Stethoscope, color: 'text-indigo-600 bg-indigo-50' },
+    { id: 'pathologists', label: 'Verified Pathologists', value: verifiedPathologists, change: '+18.5% year-to-date', icon: Users, color: 'text-sky-600 bg-sky-50' },
+    { id: 'users', label: 'Total Registered Users', value: data?.users.length, change: '+18.5% year-to-date', icon: Users, color: 'text-sky-600 bg-sky-50' },
+  ];
+
+
+
+  useEffect(() => {
+    if (isError && isError) {
+      toast.error(error.response.data.message)
+    }
+
+  }, [isError, error])
+
+
+
+  if (isLoading) {
+    return <Loader />
+  }
+
+
+
+
   return (
     <div className="min-h-screen bg-slate-50 flex">
-      
+
       {/* Sidebar Navigation */}
       <Sidebar
         items={SIDEBAR_ITEMS}
@@ -123,7 +159,7 @@ export default function AdminDashboardPage({ onNavigate }) {
 
       {/* Main Admin Area */}
       <main className="flex-1 p-6 sm:p-10 space-y-8 overflow-x-hidden">
-        
+
         {/* Top Bar */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
@@ -179,7 +215,7 @@ export default function AdminDashboardPage({ onNavigate }) {
 
         {/* Table Container Card */}
         <Card className="p-6 border-slate-200 shadow-xs space-y-4">
-          
+
           {/* Table Search & Filter Toolbar */}
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pb-3 border-b border-slate-100">
             <div className="relative w-full sm:w-80">
@@ -201,7 +237,7 @@ export default function AdminDashboardPage({ onNavigate }) {
 
           {/* DYNAMIC DATA TABLE BY SECTION */}
           <div className="overflow-x-auto">
-            
+
             {/* 1. PRODUCTS TABLE */}
             {activeSection === 'products' && (
               <table className="w-full text-left text-xs text-slate-600">
