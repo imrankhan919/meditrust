@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom'
 import {
   Users,
   Package,
@@ -30,6 +31,7 @@ import adminService from '../../services/adminService';
 import { useSelector } from 'react-redux';
 import toast from 'react-hot-toast';
 import Loader from '../../components/common/Loader';
+import AdminSidebar from '../../components/admin/AdminSidebar';
 
 
 // ==========================================
@@ -85,6 +87,10 @@ export default function AdminDashboardPage({ onNavigate }) {
   const { user } = useSelector(state => state.auth)
 
 
+  let { pathname } = useLocation()
+
+  let currentPath = pathname.split("/")[pathname.split("/").length - 1]
+
   const [activeSection, setActiveSection] = useState('products');
   const [isAddProductOpen, setIsAddProductOpen] = useState(false);
   const [verificationTarget, setVerificationTarget] = useState(null);
@@ -133,29 +139,7 @@ export default function AdminDashboardPage({ onNavigate }) {
   return (
     <div className="min-h-screen bg-slate-50 flex">
 
-      {/* Sidebar Navigation */}
-      <Sidebar
-        items={SIDEBAR_ITEMS}
-        activeItem={activeSection}
-        onSelect={setActiveSection}
-        header={
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-teal-600 text-white flex items-center justify-center font-bold text-sm shadow-sm">
-              M
-            </div>
-            <div>
-              <h2 className="text-sm font-bold text-slate-900 leading-tight">Admin Portal</h2>
-              <p className="text-[10px] text-teal-700 font-semibold uppercase tracking-wider">MediTrust Hospital Operations</p>
-            </div>
-          </div>
-        }
-        footer={
-          <div className="text-xs text-slate-500 space-y-1">
-            <p className="font-semibold text-slate-700">Audit Compliance: Active</p>
-            <p className="text-[11px] text-slate-400">HIPAA Admin Role #9941</p>
-          </div>
-        }
-      />
+      <AdminSidebar />
 
       {/* Main Admin Area */}
       <main className="flex-1 p-6 sm:p-10 space-y-8 overflow-x-hidden">
@@ -164,7 +148,7 @@ export default function AdminDashboardPage({ onNavigate }) {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-extrabold text-slate-900 capitalize">
-              {activeSection} Overview
+              {currentPath.toUpperCase()} OVERVIEW
             </h1>
             <p className="text-xs text-slate-500 mt-0.5">
               Live hospital operations, verification workflows, and pharmaceutical stock control.

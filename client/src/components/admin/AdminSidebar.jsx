@@ -20,26 +20,28 @@ import {
     ChevronDown
 } from 'lucide-react';
 import Sidebar from '../common/Sidebar';
+import { useLocation } from 'react-router-dom';
 
 const AdminSidebar = () => {
 
-    const [activeSection, setActiveSection] = useState('products');
-    const [verificationTarget, setVerificationTarget] = useState(null);
+    let { pathname } = useLocation()
+
+    let currentPath = pathname.split("/")[pathname.split("/").length - 1]
+
 
     const SIDEBAR_ITEMS = [
+        { id: '/', label: 'Admin Overview', icon: Package },
         { id: 'products', label: 'Products & Inventory', icon: Package, badge: '5' },
         { id: 'doctors', label: 'Doctors & Licensure', icon: Stethoscope, badge: '1 Pending' },
         { id: 'pathologists', label: 'Pathology Labs', icon: FlaskConical, badge: '1 Review' },
         { id: 'orders', label: 'Medicine Orders', icon: ShoppingBag, badge: '4' },
-        { id: 'appointments', label: 'Appointments', icon: Calendar, badge: '3' },
         { id: 'users', label: 'Registered Users', icon: Users, badge: '12k' },
     ];
 
     return (
         <Sidebar
             items={SIDEBAR_ITEMS}
-            activeItem={activeSection}
-            onSelect={setActiveSection}
+            activeItem={currentPath}
             header={
                 <div className="flex items-center gap-2.5">
                     <div className="w-8 h-8 rounded-lg bg-teal-600 text-white flex items-center justify-center font-bold text-sm shadow-sm">

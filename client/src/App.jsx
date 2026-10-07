@@ -37,6 +37,9 @@ import AdminDashboardPage from './pages/admin/AdminDashboardPage';
 import PrivateComponent from './components/PrivateComponent';
 import { useSelector } from 'react-redux';
 import AdminOrdersPage from './pages/admin/AdminOrdersPage';
+import AdminProductsPage from './pages/admin/AdminProductsPage';
+import AdminDoctorsPage from './pages/admin/AdminDoctorsPage';
+import AdminAllUsersPage from './pages/admin/AdminAllUsersPage';
 
 export default function App() {
 
@@ -64,6 +67,10 @@ export default function App() {
             <Route path="ai-hub" element={<AiHubPage />} />
             <Route path="admin" element={<AdminDashboardPage />} />
             <Route path="admin/orders" element={<AdminOrdersPage />} />
+            <Route path="admin/products" element={<AdminProductsPage />} />
+            <Route path="admin/doctors" element={<AdminDoctorsPage />} />
+            <Route path="admin/pathologists" element={<AdminDoctorsPage />} />
+            <Route path="admin/users" element={<AdminAllUsersPage />} />
           </Route>
         </Routes>
         {

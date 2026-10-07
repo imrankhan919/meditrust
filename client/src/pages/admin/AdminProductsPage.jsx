@@ -1,6 +1,5 @@
-import { useLocation } from 'react-router-dom'
-
 import React, { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom'
 import {
     Users,
     Package,
@@ -34,35 +33,25 @@ import toast from 'react-hot-toast';
 import Loader from '../../components/common/Loader';
 import AdminSidebar from '../../components/admin/AdminSidebar';
 
-const MOCK_ORDERS_DATA = [
-    { id: 'ORD-98421', user: 'Sarah Connor', items: '2 items', total: '$37.00', date: 'Sep 22, 2026', status: 'Shipped', badgeVariant: 'info' },
-    { id: 'ORD-98305', user: 'David Henderson', items: '2 items', total: '$51.24', date: 'Sep 15, 2026', status: 'Delivered', badgeVariant: 'success' },
-    { id: 'ORD-97910', user: 'Maria Vasquez', items: '1 item', total: '$11.25', date: 'Aug 28, 2026', status: 'Delivered', badgeVariant: 'success' },
-    { id: 'ORD-96540', user: 'Julian Ramos', items: '1 item', total: '$28.50', date: 'Jul 14, 2026', status: 'Cancelled', badgeVariant: 'danger' },
-];
 
 
 
-export default function AdminOrdersPage({ onNavigate }) {
+
+export default function AdminProductsPage({ onNavigate }) {
 
     const { user } = useSelector(state => state.auth)
+
 
     let { pathname } = useLocation()
 
     let currentPath = pathname.split("/")[pathname.split("/").length - 1]
 
-
-
-    const [activeSection, setActiveSection] = useState('Admin');
+    const [activeSection, setActiveSection] = useState('products');
     const [isAddProductOpen, setIsAddProductOpen] = useState(false);
+    const [verificationTarget, setVerificationTarget] = useState(null);
 
 
     const { data, isLoading, isSuccess, isError, error } = useQuery({ queryKey: ["items"], queryFn: () => adminService.fetchAllAdminData(user.token) })
-
-    let verifiedDoctors = data?.doctors.filter(doc => doc.isVerified).length
-    let totalOrders = data?.orders.filter(order => order.status !== "cancelled").length
-    let verifiedPathologists = data?.pathologists.filter(path => path.isVerified).length
-
 
 
     useEffect(() => {
@@ -84,8 +73,8 @@ export default function AdminOrdersPage({ onNavigate }) {
     return (
         <div className="min-h-screen bg-slate-50 flex">
 
-            {/* Sidebar Navigation */}
             <AdminSidebar />
+
 
             {/* Main Admin Area */}
             <main className="flex-1 p-6 sm:p-10 space-y-8 overflow-x-hidden">
@@ -148,43 +137,64 @@ export default function AdminOrdersPage({ onNavigate }) {
                     {/* DYNAMIC DATA TABLE BY SECTION */}
                     <div className="overflow-x-auto">
 
+                        {/* 1. PRODUCTS TABLE */}
+
                         <table className="w-full text-left text-xs text-slate-600">
                             <thead className="bg-slate-50 text-[11px] uppercase tracking-wider text-slate-400 font-bold border-b border-slate-200">
                                 <tr>
-                                    <th className="py-3 px-4">Order ID</th>
-                                    <th className="py-3 px-4">Patient Name</th>
-                                    <th className="py-3 px-4">Items</th>
-                                    <th className="py-3 px-4">Total</th>
-                                    <th className="py-3 px-4">Date</th>
-                                    <th className="py-3 px-4">Fulfillment Status</th>
+                                    <th className="py-3 px-4">Product Name</th>
+                                    <th className="py-3 px-4">Category</th>
+                                    <th className="py-3 px-4">Price</th>
+                                    <th className="py-3 px-4">Stock</th>
+                                    <th className="py-3 px-4">Rx Gate</th>
+                                    <th className="py-3 px-4">Status</th>
                                     <th className="py-3 px-4 text-right">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100">
-                                {MOCK_ORDERS_DATA.map((row) => (
+                                {data?.products.map((row) => (
                                     <tr key={row.id} className="hover:bg-slate-50/70 transition-colors">
-                                        <td className="py-3 px-4 font-mono font-bold text-slate-900">{row.id}</td>
-                                        <td className="py-3 px-4">{row.user}</td>
-                                        <td className="py-3 px-4">{row.items}</td>
-                                        <td className="py-3 px-4 font-bold text-slate-900">{row.total}</td>
-                                        <td className="py-3 px-4">{row.date}</td>
+                                        <td className="py-3 px-4 font-semibold text-slate-900">{row.name}</td>
+                                        <td className="py-3 px-4">{row.category}</td>
+                                        <td className="py-3 px-4 font-bold text-slate-900">{row.price}</td>
+                                        <td className="py-3 px-4">{row.stock} units</td>
+                                        <td className="py-3 px-4">
+                                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${row.rx === 'Required' ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-600'}`}>
+                                                {row.rx}
+                                            </span>
+                                        </td>
                                         <td className="py-3 px-4">
                                             <Badge variant={row.badgeVariant} size="sm" dot>{row.status}</Badge>
                                         </td>
                                         <td className="py-3 px-4 text-right">
-                                            <button className="text-teal-600 font-semibold hover:underline">Update Tracking</button>
+                                            <div className="flex items-center justify-end gap-1.5">
+                                                <button className="p-1 hover:bg-slate-100 rounded text-slate-600" title="Edit">
+                                                    <Edit className="w-3.5 h-3.5" />
+                                                </button>
+                                                <button className="p-1 hover:bg-rose-50 rounded text-rose-600" title="Delete">
+                                                    <Trash2 className="w-3.5 h-3.5" />
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}
                             </tbody>
                         </table>
 
+
+
+
                     </div>
                 </Card>
 
             </main>
 
-
+            {/* MODAL: ADD PRODUCT */}
+            <AddProductModal
+                isOpen={isAddProductOpen}
+                onClose={() => setIsAddProductOpen(false)}
+                onSave={() => setIsAddProductOpen(false)}
+            />
 
 
 
