@@ -1,9 +1,4 @@
-import React, { useEffect, useState } from 'react';
-import { useMutation } from '@tanstack/react-query';
-import { useSelector } from 'react-redux';
-import toast from 'react-hot-toast';
-import Loader from '../../components/common/Loader';
-import medicalService from '../../services/medicalService';
+import React, { useState } from 'react';
 import { 
   Stethoscope, 
   Check, 
@@ -22,7 +17,6 @@ import Card from '../../components/common/Card';
 import Input from '../../components/common/Input';
 import Button from '../../components/common/Button';
 import Badge from '../../components/common/Badge';
-import { useNavigate } from 'react-router-dom';
 
 const STEPS = [
   { id: 1, name: 'Personal Info', desc: 'Identity & Contacts' },
@@ -32,62 +26,8 @@ const STEPS = [
 ];
 
 export default function DoctorApplicationPage({ onNavigate }) {
-  const navigate = useNavigate();
-  const goHome = () => (onNavigate ? onNavigate('landing') : navigate('/'));
-  const { user } = useSelector((state) => state.auth);
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitted, setIsSubmitted] = useState(false);
-
-  const [form, setForm] = useState({
-    email: "dr.wright@mountsinai.org",
-    phone: "+1 (555) 782-9012",
-    clinicName: "Mount Sinai Health System, New York",
-    address: "Mount Sinai Health System, New York",
-    qualification: "Columbia University Vagelos College of Physicians",
-    registrationNumber: "NY-MED-849102-X",
-    specialization: "Cardiology",
-    experience: 12,
-    consultationFee: 95,
-  });
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm((p) => ({ ...p, [name]: value }));
-  };
-
-  const { mutate, isPending, isSuccess, isError, error, data } = useMutation({
-    mutationFn: (payload) => medicalService.becomeDoctor(payload, user?.token),
-  });
-
-  useEffect(() => {
-    if (isSuccess && data) {
-      toast.success("Doctor application submitted");
-      setIsSubmitted(true);
-    }
-    if (isError && error) {
-      toast.error(error?.response?.data?.message || "Submission failed");
-    }
-  }, [isSuccess, data, isError, error]);
-
-  const handleSubmit = () => {
-    mutate({
-      clinicName: form.clinicName,
-      address: form.address,
-      qualification: form.qualification,
-      registrationNumber: form.registrationNumber,
-      experience: Number(form.experience),
-      specialization: [form.specialization],
-      phone: form.phone,
-      email: form.email,
-      consultationFee: Number(form.consultationFee),
-      workingHours: { start: "09:00", end: "17:00" },
-      availableDays: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
-    });
-  };
-
-  if (isPending) {
-    return <Loader />;
-  }
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
@@ -155,7 +95,7 @@ export default function DoctorApplicationPage({ onNavigate }) {
               Thank you for applying to the MediTrust Clinical Network. Our medical verification board will review your license and credentials within 24 to 48 hours.
             </p>
             <div className="pt-4">
-              <Button variant="primary" size="md" onClick={goHome}>
+              <Button variant="primary" size="md" onClick={() => onNavigate('landing')}>
                 Return to Homepage
               </Button>
             </div>
@@ -174,10 +114,10 @@ export default function DoctorApplicationPage({ onNavigate }) {
                   <Input label="Last Name" defaultValue="Wright" required />
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <Input label="Professional Email" type="email" name="email" value={form.email} onChange={handleChange} icon={Mail} required />
-                  <Input label="Direct Mobile Phone" type="tel" name="phone" value={form.phone} onChange={handleChange} icon={Phone} required />
+                  <Input label="Professional Email" type="email" defaultValue="dr.wright@mountsinai.org" icon={Mail} required />
+                  <Input label="Direct Mobile Phone" type="tel" defaultValue="+1 (555) 782-9012" icon={Phone} required />
                 </div>
-                <Input label="Clinic or Hospital Affiliation" name="clinicName" value={form.clinicName} onChange={handleChange} icon={Building} />
+                <Input label="Clinic or Hospital Affiliation" defaultValue="Mount Sinai Health System, New York" icon={Building} />
               </div>
             )}
 
@@ -188,14 +128,14 @@ export default function DoctorApplicationPage({ onNavigate }) {
                   Step 2: State Medical Board & Licensure
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <Input label="Medical License Number" name="registrationNumber" value={form.registrationNumber} onChange={handleChange} required />
+                  <Input label="Medical License Number" defaultValue="NY-MED-849102-X" required />
                   <Input label="Licensing State" defaultValue="New York" required />
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <Input label="National Provider Identifier (NPI)" defaultValue="1892019482" required />
                   <Input label="DEA Registration Number" defaultValue="AW-9812903" />
                 </div>
-                <Input label="Medical School of Graduation" name="qualification" value={form.qualification} onChange={handleChange} />
+                <Input label="Medical School of Graduation" defaultValue="Columbia University Vagelos College of Physicians" />
               </div>
             )}
 
@@ -209,7 +149,7 @@ export default function DoctorApplicationPage({ onNavigate }) {
                   <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
                     Primary Medical Specialty *
                   </label>
-                  <select name="specialization" value={form.specialization} onChange={handleChange} className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-800 focus:outline-none focus:border-teal-500">
+                  <select className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-800 focus:outline-none focus:border-teal-500">
                     <option>Cardiology</option>
                     <option>Dermatology</option>
                     <option>Pediatrics</option>
@@ -219,8 +159,8 @@ export default function DoctorApplicationPage({ onNavigate }) {
                   </select>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <Input label="Years of Active Clinical Practice" type="number" name="experience" value={form.experience} onChange={handleChange} required />
-                  <Input label="Standard Telehealth Consultation Fee ($)" type="number" name="consultationFee" value={form.consultationFee} onChange={handleChange} required />
+                  <Input label="Years of Active Clinical Practice" type="number" defaultValue="12" required />
+                  <Input label="Standard Telehealth Consultation Fee ($)" type="number" defaultValue="95" required />
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
@@ -310,7 +250,7 @@ export default function DoctorApplicationPage({ onNavigate }) {
                 <Button
                   variant="primary"
                   size="lg"
-                  onClick={handleSubmit}
+                  onClick={() => setIsSubmitted(true)}
                   icon={ShieldCheck}
                 >
                   Submit Application for Verification

@@ -13,7 +13,6 @@ import {
 import Card from '../../components/common/Card';
 import Badge from '../../components/common/Badge';
 import Button from '../../components/common/Button';
-import { useNavigate } from 'react-router-dom';
 
 // ==========================================
 // MOCK DATA (Hardcoded for teaching purposes)
@@ -66,13 +65,6 @@ const MOCK_AI_ANALYSIS = {
 };
 
 export default function FindMedicinesBySymptomPage({ onNavigate }) {
-  const navigate = useNavigate();
-  const go = (id) => {
-    if (onNavigate) return onNavigate(id);
-    if (id === 'doctors') navigate('/doctors');
-    if (id === 'product-detail') navigate('/pharmacy');
-    return navigate('/pharmacy');
-  };
   const [query, setQuery] = useState('Acid Reflux & Heartburn');
 
   return (
@@ -200,7 +192,7 @@ export default function FindMedicinesBySymptomPage({ onNavigate }) {
                   <Button
                     variant="primary"
                     size="sm"
-                    onClick={() => go('product-detail')}
+                    onClick={() => onNavigate('product-detail')}
                     icon={Pill}
                   >
                     View & Order Now
@@ -225,7 +217,7 @@ export default function FindMedicinesBySymptomPage({ onNavigate }) {
           <Button
             variant="secondary"
             size="sm"
-            onClick={() => go('doctors')}
+            onClick={() => onNavigate('doctors')}
             className="whitespace-nowrap shrink-0"
           >
             Find a Doctor

@@ -15,7 +15,6 @@ import {
 import Card from '../../components/common/Card';
 import Badge from '../../components/common/Badge';
 import Button from '../../components/common/Button';
-import { useNavigate } from 'react-router-dom';
 
 // ==========================================
 // MOCK DATA (Hardcoded for teaching purposes)
@@ -60,13 +59,6 @@ Here is clinical guidance:
 ];
 
 export default function AiChatPage({ onNavigate }) {
-  const navigate = useNavigate();
-  const go = (id) => {
-    if (onNavigate) return onNavigate(id);
-    if (id === 'doctors') navigate('/doctors');
-    if (id === 'ai-prescription') navigate('/auth/ai-prescription');
-    return navigate('/auth/ai-hub');
-  };
   const [messages, setMessages] = useState(INITIAL_MESSAGES);
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(true);
@@ -113,7 +105,7 @@ export default function AiChatPage({ onNavigate }) {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => go('doctors')}
+            onClick={() => onNavigate('doctors')}
             icon={Stethoscope}
           >
             Connect with Real Doctor
@@ -217,7 +209,7 @@ export default function AiChatPage({ onNavigate }) {
       <div className="bg-white rounded-2xl border border-slate-200 p-2.5 shadow-sm flex items-center gap-2">
         <button
           type="button"
-          onClick={() => go('ai-prescription')}
+          onClick={() => onNavigate('ai-prescription')}
           className="p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
           title="Attach prescription or lab report"
         >

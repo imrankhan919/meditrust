@@ -1,12 +1,19 @@
 import { GoogleGenAI } from "@google/genai";
-import fs from "node:fs"
+import fs from "node:fs";
 import uploadToCloudinary from "../../middleware/cloudinaryMiddleware.js";
 import Prescription from "../../models/prescriptionModel.js";
 import Product from "../../models/productModel.js";
 import Pathologist from "../../models/pathologistModel.js";
 
+import { GEMINI_MODEL } from "../../config/aiConfig.js";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+function getAiClient() {
+  return new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+}
+
+// Model name lives in server/config/aiConfig.js (single source of truth).
+
+const ALLOWED_SCAN_MIME_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 const PROMPT = `
 You are a medical prescription parser. Extract the following from this 
@@ -32,85 +39,228 @@ If any field is illegible or missing, use null. Do not guess medicine names
 you're not confident about — flag uncertain reads in "notes" instead.
 `;
 
-
 function fileToBase64(path) {
-    return fs.readFileSync(path).toString("base64");
+  return fs.readFileSync(path).toString("base64");
 }
 
+function safeUnlink(filePath) {
+  try {
+    if (filePath && fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    }
+  } catch {
+    // Best-effort temp cleanup; never mask the original error.
+  }
+}
+
+function stripCodeFences(text) {
+  if (!text) return text;
+  return text
+    .replace(/```(?:json)?/gi, "")
+    .replace(/```/g, "")
+    .trim();
+}
+
+function asNullableString(value) {
+  if (value === null || value === undefined) return null;
+  const str = String(value).trim();
+  return str ? str : null;
+}
+
+function normalizeMedicines(medicines) {
+  if (!Array.isArray(medicines)) return [];
+  return medicines.slice(0, 50).map((med) => {
+    if (!med || typeof med !== "object") {
+      return {
+        name: null,
+        dosage: null,
+        frequency: null,
+        duration: null,
+        notes: "unreadable entry",
+      };
+    }
+    return {
+      name: asNullableString(med.name),
+      dosage: asNullableString(med.dosage),
+      frequency: asNullableString(med.frequency),
+      duration: asNullableString(med.duration),
+      notes: asNullableString(med.notes),
+    };
+  });
+}
+
+function normalizeExtraction(data) {
+  const source = data && typeof data === "object" ? data : {};
+  return {
+    patient_name: asNullableString(source.patient_name),
+    doctor_name: asNullableString(source.doctor_name),
+    date: asNullableString(source.date),
+    medicines: normalizeMedicines(source.medicines),
+    diagnosis_notes: asNullableString(source.diagnosis_notes),
+  };
+}
+
+function mapGeminiError(err) {
+  const message = err?.message || "Extraction failed";
+  const status = err?.status ?? err?.code;
+  if (status === 429 || /quota|rate limit|429/i.test(message)) {
+    return {
+      statusCode: 429,
+      error: "AI service is rate-limited. Please try again shortly.",
+    };
+  }
+  // Invalid credentials are a key problem, never a model problem.
+  if (
+    status === 400 || status === 401 || status === 403 ||
+    /api[_\- ]?key not valid|invalid[_\- ]?(api[_\- ]?)?key|permission[_\- ]denied|unauthenticated|unauthorized/i.test(message)
+  ) {
+    return {
+      statusCode: 500,
+      error:
+        "AI service credentials were rejected. Check GEMINI_API_KEY server configuration.",
+    };
+  }
+  // Overloaded / temporarily unavailable: Google reports 503 UNAVAILABLE
+  // ("high demand", "overloaded"). Retryable, but only by an explicit
+  // user action — the frontend never auto-retries.
+  if (status === 503 || /high demand|overloaded|temporarily unavailable/i.test(message)) {
+    return {
+      statusCode: 503,
+      error: "AI service is temporarily overloaded. Please try again shortly.",
+      retryable: true,
+    };
+  }
+  // Unknown model: numeric 404, or a message that BOTH names a model AND
+  // reports it missing. A bare "model" substring alone proves nothing.
+  if (
+    status === 404 ||
+    (/model/i.test(message) && /not[\s_-]?found/i.test(message))
+  ) {
+    return {
+      statusCode: 502,
+      error: "Configured AI model is unavailable. Please try again later.",
+    };
+  }
+  if (/timeout|timed out|deadline/i.test(message)) {
+    return {
+      statusCode: 504,
+      error: "AI extraction timed out. Please retry with a clearer image.",
+    };
+  }
+  return { statusCode: 500, error: "Extraction failed", details: message };
+}
 
 const explainPrescription = async (req, res) => {
+  const userId = req.user._id || req.user.id;
 
-    let userId = req.user.id
+  if (!req.file) {
+    return res.status(400).json({
+      error:
+        "No image uploaded. Upload a JPEG, PNG, or WEBP prescription image.",
+    });
+  }
 
-    try {
-        if (!req.file) {
-            return res.status(400).json({ error: "No image uploaded" });
-        }
+  if (!ALLOWED_SCAN_MIME_TYPES.includes(req.file.mimetype)) {
+    safeUnlink(req.file.path);
+    return res.status(400).json({
+      error:
+        "Unsupported file type. Only JPEG, PNG, and WEBP images are allowed.",
+    });
+  }
 
-        const base64 = fileToBase64(req.file.path);
+  if (!process.env.GEMINI_API_KEY) {
+    safeUnlink(req.file.path);
+    return res
+      .status(500)
+      .json({ error: "AI service is not configured on the server." });
+  }
 
-        const response = await ai.models.generateContent({
-            model: "gemini-3.6-flash",
-            contents: [
-                {
-                    role: "user",
-                    parts: [
-                        { text: PROMPT },
-                        {
-                            inlineData: {
-                                mimeType: req.file.mimetype,
-                                data: base64,
-                            },
-                        },
-                    ],
-                },
-            ],
-            config: {
-                responseMimeType: "application/json",
+  try {
+    const base64 = fileToBase64(req.file.path);
+
+    const response = await getAiClient().models.generateContent({
+      model: GEMINI_MODEL,
+      contents: [
+        {
+          role: "user",
+          parts: [
+            { text: PROMPT },
+            {
+              inlineData: {
+                mimeType: req.file.mimetype,
+                data: base64,
+              },
             },
-        });
+          ],
+        },
+      ],
+      config: {
+        responseMimeType: "application/json",
+      },
+    });
 
-        const image = await uploadToCloudinary(req.file.path)
-        fs.unlinkSync(req.file.path); // cleanup temp file
+    const image = await uploadToCloudinary(req.file.path);
+    safeUnlink(req.file.path); // cleanup temp file in all paths
 
-        const text = response.text; // property, not a function, in the new SDK
-        const data = JSON.parse(text);
-
-        const prescription = new Prescription({
-            user: userId,
-            patient_name: data.patient_name,
-            doctor_name: data.doctor_name,
-            date: data.date,
-            medicines: data.medicines,
-            diagnosis_notes: data.diagnosis_notes,
-            image: image.secure_url
-        })
-
-        await prescription.save()
-        await prescription.populate("user")
-
-        res.status(200).json(prescription)
-
-
-    } catch (err) {
-        fs.unlinkSync(req.file.path); // cleanup temp file
-        console.error(err);
-        res.status(500).json({ error: "Extraction failed", details: err.message });
+    if (!image?.secure_url) {
+      return res
+        .status(502)
+        .json({ error: "Prescription image storage failed. Please retry." });
     }
-}
 
+    let data;
+    try {
+      data = JSON.parse(stripCodeFences(response.text));
+    } catch {
+      return res.status(502).json({
+        error:
+          "AI returned an unreadable response. Please retry with a clearer image.",
+      });
+    }
+    const normalized = normalizeExtraction(data);
 
+    const prescription = new Prescription({
+      user: userId,
+      patient_name: normalized.patient_name,
+      doctor_name: normalized.doctor_name,
+      date: normalized.date,
+      medicines: normalized.medicines,
+      diagnosis_notes: normalized.diagnosis_notes,
+      image: image.secure_url,
+    });
 
+    await prescription.save();
 
-
+    res.status(201).json(prescription);
+  } catch (err) {
+    safeUnlink(req.file?.path); // cleanup temp file
+    const mapped = mapGeminiError(err);
+    if (mapped.details) {
+      return res
+        .status(mapped.statusCode)
+        .json({ error: mapped.error, details: mapped.details });
+    }
+    return res.status(mapped.statusCode).json({ error: mapped.error });
+  }
+};
 
 const findMedicines = async (req, res) => {
+  const pid = req.params.pid;
 
-    const pid = req.params.pid
+  if (!process.env.GEMINI_API_KEY) {
+    return res
+      .status(500)
+      .json({ error: "AI service is not configured on the server." });
+  }
 
-    const products = await Product.find()
-    const pathologists = await Pathologist.find()
-    const prescription = await Prescription.findById(pid)
+  try {
+    const products = await Product.find().lean();
+    const pathologists = await Pathologist.find().lean();
+    const prescription = await Prescription.findById(pid).lean();
+
+    if (!prescription) {
+      return res.status(404).json({ error: "Prescription not found" });
+    }
 
     const MEDICINE_FOUNDER_PROMPT = `You are a medicine and pathology-test availability checker for a healthcare platform.
 
@@ -169,109 +319,98 @@ RULES:
 - Be conservative: if you're not reasonably confident of a match, set matched_product_name to null and available to false rather than guessing.
 - Do not include any explanation outside the JSON object.
 
-Here is the data: ${{ products, pathologists, medicines: prescription.medicines }}
-`
+Here is the data: ${JSON.stringify({ products, pathologists, medicines: prescription.medicines })}
+`;
 
+    const response = await getAiClient().models.generateContent({
+      model: GEMINI_MODEL,
+      contents: [
+        {
+          role: "user",
+          parts: [{ text: MEDICINE_FOUNDER_PROMPT }],
+        },
+      ],
+      config: {
+        responseMimeType: "application/json",
+      },
+    });
+
+    const rawText = response.text; // property, not a function, in the new SDK
+    let data;
     try {
-
-        const response = await ai.models.generateContent({
-            model: "gemini-3.6-flash",
-            contents: [
-                {
-                    role: "user",
-                    parts: [
-                        { text: MEDICINE_FOUNDER_PROMPT },
-                    ],
-                },
-            ],
-            config: {
-                responseMimeType: "application/json",
-            },
-        });
-
-
-        const text = response.text; // property, not a function, in the new SDK
-        const data = JSON.parse(text);
-
-        res.json(data)
-
-
-    } catch (error) {
-        res.status(409)
-        throw new Error("Error In Getting Data From Server!")
+      data = JSON.parse(stripCodeFences(rawText));
+    } catch {
+      return res.status(502).json({
+        error: "AI returned an unreadable response. Please try again shortly.",
+      });
     }
 
-
-
-
-    res.json({ products, pathologists, medicines: prescription.medicines })
-
-
-
-}
-
+    return res.json(data);
+  } catch (error) {
+    const mapped = mapGeminiError(error);
+    if (mapped.details) {
+      return res
+        .status(mapped.statusCode)
+        .json({ error: mapped.error, details: mapped.details });
+    }
+    return res.status(mapped.statusCode).json({ error: mapped.error });
+  }
+};
 
 const chatWithAi = async (req, res) => {
+  const text = req.body?.text ?? req.query?.text;
 
-    const { text } = req.body
+  if (!text || !String(text).trim()) {
+    return res.status(400).json({ error: "Please provide a message." });
+  }
 
-    if (!text) {
-        res.status(409)
-        throw new Error("Please Fill All Details")
-    }
+  if (!process.env.GEMINI_API_KEY) {
+    return res
+      .status(500)
+      .json({ error: "AI service is not configured on the server." });
+  }
 
-    const SYSTEM_INSTRUCTION = `You are MediTrust's basic health guidance assistant. Rules you MUST follow:
+  const SYSTEM_INSTRUCTION = `You are MediTrust's basic health guidance assistant. Rules you MUST follow:
 - Give only general, non-diagnostic health information.
 - Never provide a diagnosis and never recommend specific dosages.
 - Keep answers short and easy to understand.
 - Always suggest booking a real doctor on MediTrust for anything specific or urgent.
-- If the question is an emergency or serious symptom, urge seeking immediate professional care. here is my query : ${text}`
+- If the question is an emergency or serious symptom, urge seeking immediate professional care. here is my query : ${text}`;
 
-    try {
-        const response = await ai.models.generateContent({
-            model: "gemini-3.6-flash",
-            contents: [
-                {
-                    role: "user",
-                    parts: [
-                        { text: SYSTEM_INSTRUCTION },
-                    ],
-                },
-            ],
-            config: {
-                responseMimeType: "application/json",
-            },
-        });
+  try {
+    const response = await getAiClient().models.generateContent({
+      model: GEMINI_MODEL,
+      contents: [
+        {
+          role: "user",
+          parts: [{ text: SYSTEM_INSTRUCTION }],
+        },
+      ],
+    });
 
-
-        const text = response.text; // property, not a function, in the new SDK
-        const data = JSON.parse(text);
-
-        res.json(data)
-    } catch (error) {
-        console.log(error.message)
-        res.status(409)
-        throw new Error("Error In Getting Data From Server!")
+    const reply = (response.text || "").trim();
+    if (!reply) {
+      return res.status(502).json({
+        error: "AI returned an empty response. Please try again shortly.",
+      });
     }
 
-
-
-
-
-}
-
-
-
-
-
-
-
-
+    return res.json({ reply });
+  } catch (error) {
+    const mapped = mapGeminiError(error);
+    if (mapped.details) {
+      return res
+        .status(mapped.statusCode)
+        .json({ error: mapped.error, details: mapped.details });
+    }
+    return res.status(mapped.statusCode).json({ error: mapped.error });
+  }
+};
 
 const aiController = {
-    explainPrescription, findMedicines, chatWithAi
-}
+  explainPrescription,
+  findMedicines,
+  chatWithAi,
+};
 
-export default aiController
-
-
+export default aiController;

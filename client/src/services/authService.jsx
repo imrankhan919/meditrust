@@ -37,7 +37,6 @@ const updateProfile = async (payload) => {
     }
 
     const response = await axios.put("/api/auth/me", payload, options)
-    console.log(response)
     return response.data
 
 

@@ -15,7 +15,6 @@ import {
 import Card from '../../components/common/Card';
 import Badge from '../../components/common/Badge';
 import Button from '../../components/common/Button';
-import { useNavigate } from 'react-router-dom';
 
 // ==========================================
 // MOCK DATA (Hardcoded for teaching purposes)
@@ -73,8 +72,6 @@ const MOCK_LAB_BOOKINGS = [
 ];
 
 export default function MyLabAppointmentsPage({ onNavigate }) {
-  const navigate = useNavigate();
-  const go = (id) => (onNavigate ? onNavigate(id) : navigate(id === 'lab' ? '/lab' : '/auth/dashboard'));
   const [downloadSuccess, setDownloadSuccess] = useState('');
 
   const handleDownload = (fileName) => {
@@ -102,7 +99,7 @@ export default function MyLabAppointmentsPage({ onNavigate }) {
         <Button
           variant="primary"
           size="sm"
-          onClick={() => go('lab')}
+          onClick={() => onNavigate('lab')}
           icon={FlaskConical}
         >
           Book Another Test
