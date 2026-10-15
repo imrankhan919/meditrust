@@ -1,56 +1,95 @@
-import axios from "axios"
+import axios from "axios";
 
-const fetchAllAdminData = async (payload) => {
+const authHeaders = (token) => ({
+    headers: {
+        Authorization: `Bearer ${token}`,
+    },
+});
 
-    const options = {
-        headers: {
-            authorization: `Bearer ${payload}`
-        }
-    }
+/**
+ * Admin API client.
+ * All endpoints below are enforced server-side by protect.forAdmin.
+ * NOTE (known backend limitation): there is no PUT/DELETE /api/admin/users/:id
+ * endpoint, so role changes and deletes are intentionally NOT implemented here.
+ * Doctor/pathologist verification endpoints promote userType server-side.
+ */
 
-    const responseForUsers = await axios.get("/api/admin/users", options)
-    const responseForProducts = await axios.get("/api/admin/products", options)
-    const responseForPathologists = await axios.get("/api/admin/pathologists", options)
-    const responseForOrders = await axios.get("/api/admin/orders", options)
-    const responseForDoctors = await axios.get("/api/admin/doctors", options)
+const fetchUsers = async (token) => {
+    const response = await axios.get("/api/admin/users", authHeaders(token));
+    return response.data;
+};
 
-    const data = {
-        users: responseForUsers.data,
-        products: responseForProducts.data,
-        pathologists: responseForPathologists.data,
-        orders: responseForOrders.data,
-        doctors: responseForDoctors.data
-    }
+const fetchProducts = async (token) => {
+    const response = await axios.get("/api/admin/products", authHeaders(token));
+    return response.data;
+};
 
+const fetchDoctors = async (token) => {
+    const response = await axios.get("/api/admin/doctors", authHeaders(token));
+    return response.data;
+};
 
+const fetchPathologists = async (token) => {
+    const response = await axios.get("/api/admin/pathologists", authHeaders(token));
+    return response.data;
+};
 
-    return data
+const fetchOrders = async (token) => {
+    const response = await axios.get("/api/admin/orders", authHeaders(token));
+    return response.data;
+};
 
-}
+const fetchAllAdminData = async (token) => {
+    const [users, products, doctors, pathologists, orders] = await Promise.all([
+        fetchUsers(token),
+        fetchProducts(token),
+        fetchDoctors(token),
+        fetchPathologists(token),
+        fetchOrders(token),
+    ]);
 
+    return { users, products, doctors, pathologists, orders };
+};
 
 const createProduct = async (productData, token) => {
-
-
-    const response = await axios.post(
-        "/api/admin/product",
-        productData,
-        {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        }
-    );
-
+    const response = await axios.post("/api/admin/product", productData, authHeaders(token));
     return response.data;
-}
+};
 
+const updateDoctorVerification = async ({ id, isVerified }, token) => {
+    const response = await axios.put(
+        `/api/admin/doctor/${id}`,
+        { isVerified },
+        authHeaders(token)
+    );
+    return response.data;
+};
 
+const updatePathologistVerification = async ({ id, isVerified }, token) => {
+    const response = await axios.put(
+        `/api/admin/pathologists/${id}`,
+        { isVerified },
+        authHeaders(token)
+    );
+    return response.data;
+};
+
+const updateProduct = async ({ id, payload }, token) => {
+    const response = await axios.put(`/api/admin/product/${id}`, payload, authHeaders(token));
+    return response.data;
+};
 
 const adminService = {
+    fetchUsers,
+    fetchProducts,
+    fetchDoctors,
+    fetchPathologists,
+    fetchOrders,
     fetchAllAdminData,
-    createProduct
-}
+    createProduct,
+    updateProduct,
+    updateDoctorVerification,
+    updatePathologistVerification,
+};
 
-
-export default adminService
+export default adminService;

@@ -1,173 +1,166 @@
-import React, { useEffect, useState } from "react";
-import {
-  Users,
-  Package,
-  Stethoscope,
-  FlaskConical,
-  ShoppingBag,
-  Calendar,
-  DollarSign,
-  TrendingUp,
-  Search,
-  Plus,
-  Filter,
-  Edit,
-  Trash2,
-  CheckCircle2,
-  XCircle,
-  ShieldCheck,
-  MoreVertical,
-  ChevronDown,
-} from "lucide-react";
-import Card from "../../components/common/Card";
-import Badge from "../../components/common/Badge";
-import Button from "../../components/common/Button";
-import Sidebar from "../../components/common/Sidebar";
-import AddProductModal from "./AddProductModal";
-import VerificationModal from "./VerificationModal";
+import React, { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import adminService from "../../services/adminService";
 import { useSelector } from "react-redux";
 import toast from "react-hot-toast";
-import LoaderScreen from "../../components/common/Loader";
-import AdminSidebar from "../../components/admin/AdminSidebar";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Search, AlertCircle, ShoppingBag } from "lucide-react";
+import Card from "../../components/common/Card";
+import Badge from "../../components/common/Badge";
+import adminService from "../../services/adminService";
 
-export default function AdminOrdersPage({ onNavigate }) {
-  const navigate = useNavigate();
-  const goHome = () => (onNavigate ? onNavigate("landing") : navigate("/"));
+const STATUS_OPTIONS = ["ALL", "PENDING", "CONFIRMED", "DELIVERED", "CANCELLED"];
+
+const statusBadge = (status) => {
+  switch ((status || "").toLowerCase()) {
+    case "confirmed":
+      return "info";
+    case "delivered":
+      return "success";
+    case "cancelled":
+      return "danger";
+    default:
+      return "warning";
+  }
+};
+
+const shortId = (id) => (id ? String(id).slice(-8) : "—");
+
+export default function AdminOrdersPage() {
   const { user } = useSelector((state) => state.auth);
+  const token = user?.token;
 
-  let { pathname } = useLocation();
-  let currentPath = pathname.split("/")[pathname.split("/").length - 1];
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("ALL");
 
-  const { data, isLoading, isSuccess, isError, error } = useQuery({
-    queryKey: ["items"],
-    queryFn: (payload) => adminService.fetchAllAdminData(user?.token),
+  const { data: orders = [], isLoading, isError, error, refetch } = useQuery({
+    queryKey: ["admin", "orders"],
+    queryFn: () => adminService.fetchOrders(token),
+    enabled: !!token,
   });
-
-  const [activeSection, setActiveSection] = useState("Order");
-  const [isAddProductOpen, setIsAddProductOpen] = useState(false);
-  const [verificationTarget, setVerificationTarget] = useState(null);
 
   useEffect(() => {
     if (isError && error) {
-      toast.error(error.response.data.message);
+      toast.error(error?.response?.data?.message || error.message || "Failed to load orders");
     }
-  }, [isError, error, data, isSuccess]);
+  }, [isError, error]);
 
-  if (isLoading) {
-    return <LoaderScreen />;
-  }
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return orders
+      .filter((o) =>
+        statusFilter === "ALL" ? true : (o.status || "").toLowerCase() === statusFilter.toLowerCase()
+      )
+      .filter((o) =>
+        q
+          ? `${o._id || ""} ${typeof o.user === "string" ? o.user : o.user?.name || ""} ${typeof o.product === "string" ? o.product : o.product?.name || ""} ${o.status || ""}`
+              .toLowerCase()
+              .includes(q)
+          : true
+      )
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  }, [orders, search, statusFilter]);
 
   return (
-    <div className="min-h-screen bg-slate-50 flex">
-      {/* Sidebar Navigation */}
-      <AdminSidebar />
+    <div className="space-y-6">
+      <p className="text-xs text-slate-500">
+        The orders API returns unpopulated user/product references, so only IDs and
+        status are shown. Order-status updates are not available in the backend.
+      </p>
 
-      {/* Main Admin Area */}
-      <main className="flex-1 p-6 sm:p-10 space-y-8 overflow-x-hidden">
-        {/* Top Bar */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-extrabold text-slate-900 capitalize">
-              {currentPath.toUpperCase()} OVERVIEW
-            </h1>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Live hospital operations, verification workflows, and
-              pharmaceutical stock control.
-            </p>
+      <Card className="p-6 border-slate-200 space-y-4">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pb-3 border-b border-slate-100">
+          <div className="relative w-full sm:w-80">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <label htmlFor="admin-order-search" className="sr-only">Search orders</label>
+            <input
+              id="admin-order-search"
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search order ID or status..."
+              className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/30"
+            />
           </div>
-
-          {/* ADD PRODUCT MODEL
           <div className="flex items-center gap-2">
-            {activeSection === "products" && (
-              <Button
-                variant="primary"
-                size="sm"
-                icon={Plus}
-                onClick={() => setIsAddProductOpen(true)}>
-                Add New Product
-              </Button>
-            )}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={goHome}>
-              Exit to Patient Portal
-            </Button>
-          </div> */}
+            <label htmlFor="admin-order-status" className="text-xs font-semibold text-slate-600">Status</label>
+            <select
+              id="admin-order-status"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 focus:outline-none focus:border-teal-500">
+              {STATUS_OPTIONS.map((s) => (
+                <option key={s} value={s}>{s === "ALL" ? "All" : s.charAt(0) + s.slice(1).toLowerCase()}</option>
+              ))}
+            </select>
+          </div>
+          <p className="text-xs text-slate-500 sm:ml-auto" aria-live="polite">
+            {filtered.length} of {orders.length} orders
+          </p>
         </div>
 
-        {/* Table Container Card */}
-        <Card className="p-6 border-slate-200 shadow-xs space-y-4">
-          {/* Table Search & Filter Toolbar */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pb-3 border-b border-slate-100">
-            <div className="relative w-full sm:w-80">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                placeholder={`Search ${activeSection}...`}
-                className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-teal-500"
-              />
-            </div>
-
-            <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-              <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50">
-                <Filter className="w-3.5 h-3.5 text-slate-400" />
-                <span>Filters</span>
-              </button>
-            </div>
+        {isLoading ? (
+          <div className="space-y-3" aria-busy="true" aria-label="Loading orders">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="h-10 rounded bg-slate-100 animate-pulse" />
+            ))}
           </div>
-
-          {/* DYNAMIC DATA TABLE BY SECTION */}
+        ) : isError ? (
+          <div className="text-center space-y-3 py-8">
+            <AlertCircle className="w-8 h-8 text-rose-500 mx-auto" />
+            <p className="text-sm text-slate-600">
+              {error?.response?.data?.message || error?.message || "Failed to load orders."}
+            </p>
+            <button
+              type="button"
+              onClick={() => refetch()}
+              className="inline-flex items-center rounded-xl bg-teal-600 px-4 py-2 text-xs font-semibold text-white hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2">
+              Retry
+            </button>
+          </div>
+        ) : filtered.length === 0 ? (
+          <div className="text-center py-10 space-y-2">
+            <ShoppingBag className="w-8 h-8 text-slate-300 mx-auto" />
+            <p className="text-sm font-semibold text-slate-700">No orders found</p>
+            <p className="text-xs text-slate-500">Try a different search or status filter.</p>
+          </div>
+        ) : (
           <div className="overflow-x-auto">
-            {/* 4. ORDERS TABLE */}
             <table className="w-full text-left text-xs text-slate-600">
               <thead className="bg-slate-50 text-[11px] uppercase tracking-wider text-slate-400 font-bold border-b border-slate-200">
                 <tr>
-                  <th className="py-3 px-4">Order ID</th>
-                  <th className="py-3 px-4">Patient Name</th>
-                  <th className="py-3 px-4">Product Name</th>
-                  <th className="py-3 px-4">Total</th>
-                  <th className="py-3 px-4">Date</th>
-                  <th className="py-3 px-4">Fulfillment Status</th>
-                  <th className="py-3 px-4 text-right">Actions</th>
+                  <th scope="col" className="py-3 px-4">Order ID</th>
+                  <th scope="col" className="py-3 px-4">User Ref</th>
+                  <th scope="col" className="py-3 px-4">Product Ref</th>
+                  <th scope="col" className="py-3 px-4">Date</th>
+                  <th scope="col" className="py-3 px-4">Fulfillment Status</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {data?.orders?.map((row) => (
-                  <tr
-                    key={row._id}
-                    className="hover:bg-slate-50/70 transition-colors">
-                    <td className="py-3 px-4 font-mono font-bold text-slate-900">
-                      {row._id}
+                {filtered.map((row) => (
+                  <tr key={row._id} className="hover:bg-slate-50/70 transition-colors">
+                    <td className="py-3 px-4 font-mono font-bold text-slate-900" title={row._id}>
+                      …{shortId(row._id)}
                     </td>
-                    <td className="py-3 px-4">{row.user.name}</td>
-                    <td className="py-3 px-4">{row.product.name}</td>
-                    <td className="py-3 px-4 font-bold text-slate-900">
-                      {row.product.price}
+                    <td className="py-3 px-4 font-mono text-[11px]" title={typeof row.user === "string" ? row.user : row.user?._id}>
+                      {typeof row.user === "string" ? `…${shortId(row.user)}` : row.user?.name || `…${shortId(row.user?._id)}`}
                     </td>
-                    <td className="py-3 px-4">
-                      {new Date(row.createdAt).toLocaleDateString("en-IN")}
+                    <td className="py-3 px-4 font-mono text-[11px]" title={typeof row.product === "string" ? row.product : row.product?._id}>
+                      {typeof row.product === "string" ? `…${shortId(row.product)}` : row.product?.name || `…${shortId(row.product?._id)}`}
                     </td>
                     <td className="py-3 px-4">
-                      <Badge variant={row.badgeVariant} size="sm" dot>
-                        {row.status.toUpperCase()}
+                      {row.createdAt ? new Date(row.createdAt).toLocaleDateString("en-IN") : "—"}
+                    </td>
+                    <td className="py-3 px-4">
+                      <Badge variant={statusBadge(row.status)} size="sm" dot>
+                        {(row.status || "UNKNOWN").toUpperCase()}
                       </Badge>
-                    </td>
-                    <td className="py-3 px-4 text-right">
-                      <button className="text-teal-600 font-semibold hover:underline">
-                        Update Tracking
-                      </button>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-        </Card>
-      </main>
+        )}
+      </Card>
     </div>
   );
 }

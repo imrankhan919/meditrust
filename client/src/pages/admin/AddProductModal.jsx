@@ -2,9 +2,8 @@
 import React, { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSelector } from "react-redux";
-import { Upload, X, ImagePlus } from "lucide-react";
+import { ImagePlus } from "lucide-react";
 
-import axios from "axios";
 import Modal from "../../components/common/Modal";
 import Input from "../../components/common/Input";
 import Button from "../../components/common/Button";
@@ -22,10 +21,13 @@ export default function AddProductModal({
 
 
   const mutation = useMutation({
-    mutationFn: async (productData) => adminService.createProduct(productData, user.token),
+    mutationFn: async (productData) => adminService.createProduct(productData, user?.token),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["products"],
+        queryKey: ["admin", "products"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["admin", "overview"],
       });
 
       handleClose();
@@ -72,7 +74,7 @@ export default function AddProductModal({
     e.preventDefault();
     setFormError("");
 
-    if (!user.token) {
+    if (!user?.token) {
       setFormError("Please log in to add a product.");
       return;
     }
@@ -94,11 +96,6 @@ export default function AddProductModal({
       setFormError("Stock must be a non-negative integer.");
       return;
     }
-
-    console.log("FormData entries:");
-    console.log([...formData.entries()]);
-
-    console.log({ ...formData, token: user.token })
 
     mutation.mutate(formData);
   };

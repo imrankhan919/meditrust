@@ -29,10 +29,11 @@ export default function Sidebar({
         {items.map((item) => {
           const isActive = activeItem === item.id;
           const Icon = item.icon;
+          const target = item.id === '' ? '/auth/admin' : `/auth/admin/${item.id}`;
           return (
             <Link
-              key={item.id}
-              to={`/auth/admin/${item.id}`}
+              key={item.id === '' ? 'overview' : item.id}
+              to={target}
               onClick={() => onSelect && onSelect(item.id)}
               type="button"
               className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${isActive

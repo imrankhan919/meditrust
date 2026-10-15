@@ -125,7 +125,7 @@ const updateAppointment = async (req, res) => {
 
 const getAppointment = async (req, res) => {
     const appointmentId = req.params.aid
-    const appointment = await PathologyAppointment.findById(appointmentId).populate('user').populate('pathologist').populate('pathologyTest')
+    const appointment = await PathologyAppointment.findById(appointmentId).populate({ path: 'user', select: '-password' }).populate('pathologist').populate('pathologyTest')
 
     if (!appointment) {
         res.status(404)
@@ -152,7 +152,7 @@ const getAllPathologyTests = async (req, res) => {
 }
 const getAllPathologists = async (req, res) => {
 
-    const pathologists = await Pathologist.find().populate('user')
+    const pathologists = await Pathologist.find().populate({ path: 'user', select: '-password' })
 
     if (!pathologists) {
         res.status(404)
@@ -181,7 +181,7 @@ const bookTest = async (req, res) => {
     const testBooking = new PathologyAppointment({ user: userId, pathologist: pid, pathologyTest: pathologyTest })
 
     await testBooking.save()
-    await testBooking.populate("user")
+    await testBooking.populate({ path: "user", select: "-password" })
     await testBooking.populate('pathologist')
     await testBooking.populate('pathologyTest')
 

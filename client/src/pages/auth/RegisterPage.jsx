@@ -25,13 +25,6 @@ export default function RegisterPage({ onNavigate }) {
 
   const navigate = useNavigate()
 
-  const go = (id) => {
-    if (onNavigate) return onNavigate(id);
-    if (id === 'landing') navigate('/');
-    if (id === 'login') navigate('/login');
-    return navigate('/');
-  };
-
   const [showPassword, setShowPassword] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -84,7 +77,7 @@ export default function RegisterPage({ onNavigate }) {
         {/* Brand header */}
         <div className="text-center space-y-2">
           <div
-            onClick={() => go('landing')}
+            onClick={() => onNavigate('landing')}
             className="inline-flex items-center gap-2 cursor-pointer group"
           >
             <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-teal-600 to-teal-400 flex items-center justify-center text-white shadow-md shadow-teal-500/20 group-hover:scale-105 transition-transform">
@@ -213,7 +206,7 @@ export default function RegisterPage({ onNavigate }) {
               Already have an account?{' '}
               <button
                 type="button"
-                onClick={() => go('login')}
+                onClick={() => onNavigate('login')}
                 className="font-bold text-teal-600 hover:text-teal-700 hover:underline"
               >
                 Sign In Instead

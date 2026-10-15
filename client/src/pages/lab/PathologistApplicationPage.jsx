@@ -1,9 +1,4 @@
-import React, { useEffect, useState } from 'react';
-import { useMutation } from '@tanstack/react-query';
-import { useSelector } from 'react-redux';
-import toast from 'react-hot-toast';
-import Loader from '../../components/common/Loader';
-import medicalService from '../../services/medicalService';
+import React, { useState } from 'react';
 import { 
   FlaskConical, 
   Check, 
@@ -22,7 +17,6 @@ import Card from '../../components/common/Card';
 import Input from '../../components/common/Input';
 import Button from '../../components/common/Button';
 import Badge from '../../components/common/Badge';
-import { useNavigate } from 'react-router-dom';
 
 const STEPS = [
   { id: 1, name: 'Lab Info', desc: 'Facility & Director' },
@@ -32,62 +26,8 @@ const STEPS = [
 ];
 
 export default function PathologistApplicationPage({ onNavigate }) {
-  const navigate = useNavigate();
-  const goHome = () => (onNavigate ? onNavigate('landing') : navigate('/'));
-  const { user } = useSelector((state) => state.auth);
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitted, setIsSubmitted] = useState(false);
-
-  const [form, setForm] = useState({
-    laboratoryName: "Metro Diagnostic Pathology Labs Inc.",
-    laboratoryAddress: "1200 Science Park Drive, Suite 400, Boston, MA",
-    qualification: "NABL-MED-ISO-15189",
-    registrationNumber: "MD-PATH-99201",
-    experience: 10,
-    specialization: "Clinical Biochemistry",
-    phone: "+1 (555) 345-9011",
-    email: "compliance@metropathology.com",
-    consultationFee: 50,
-  });
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm((p) => ({ ...p, [name]: value }));
-  };
-
-  const { mutate, isPending, isSuccess, isError, error, data } = useMutation({
-    mutationFn: (payload) => medicalService.becomePathologist(payload, user?.token),
-  });
-
-  useEffect(() => {
-    if (isSuccess && data) {
-      toast.success("Pathologist application submitted");
-      setIsSubmitted(true);
-    }
-    if (isError && error) {
-      toast.error(error?.response?.data?.message || "Submission failed");
-    }
-  }, [isSuccess, data, isError, error]);
-
-  const handleSubmit = () => {
-    mutate({
-      laboratoryName: form.laboratoryName,
-      laboratoryAddress: form.laboratoryAddress,
-      qualification: form.qualification,
-      registrationNumber: form.registrationNumber,
-      experience: Number(form.experience),
-      specialization: [form.specialization],
-      phone: form.phone,
-      email: form.email,
-      consultationFee: Number(form.consultationFee),
-      workingHours: { start: "09:00", end: "17:00" },
-      availableDays: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
-    });
-  };
-
-  if (isPending) {
-    return <Loader />;
-  }
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
@@ -155,7 +95,7 @@ export default function PathologistApplicationPage({ onNavigate }) {
               Your diagnostic center registration has been submitted. Our pathology accreditation team will inspect submitted calibration data and schedule a facility audit within 3 business days.
             </p>
             <div className="pt-4">
-              <Button variant="primary" size="md" onClick={goHome}>
+              <Button variant="primary" size="md" onClick={() => onNavigate('landing')}>
                 Back to Homepage
               </Button>
             </div>
@@ -169,16 +109,16 @@ export default function PathologistApplicationPage({ onNavigate }) {
                 <h3 className="text-base font-bold text-slate-900 pb-2 border-b border-slate-100">
                   Step 1: Diagnostic Facility & Laboratory Director Info
                 </h3>
-                <Input label="Registered Laboratory Name" name="laboratoryName" value={form.laboratoryName} onChange={handleChange} icon={Building2} required />
+                <Input label="Registered Laboratory Name" defaultValue="Metro Diagnostic Pathology Labs Inc." icon={Building2} required />
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <Input label="Chief Pathologist / Medical Director" defaultValue="Dr. Kenneth Harris, MD, FACP" required />
-                  <Input label="Director State Medical License" name="registrationNumber" value={form.registrationNumber} onChange={handleChange} required />
+                  <Input label="Director State Medical License" defaultValue="MD-PATH-99201" required />
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <Input label="Official Lab Email" type="email" name="email" value={form.email} onChange={handleChange} icon={Mail} required />
-                  <Input label="Direct Facility Contact Phone" type="tel" name="phone" value={form.phone} onChange={handleChange} icon={Phone} required />
+                  <Input label="Official Lab Email" type="email" defaultValue="compliance@metropathology.com" icon={Mail} required />
+                  <Input label="Direct Facility Contact Phone" type="tel" defaultValue="+1 (555) 345-9011" icon={Phone} required />
                 </div>
-                <Input label="Physical Facility Address" name="laboratoryAddress" value={form.laboratoryAddress} onChange={handleChange} icon={MapPin} />
+                <Input label="Physical Facility Address" defaultValue="1200 Science Park Drive, Suite 400, Boston, MA" icon={MapPin} />
               </div>
             )}
 
@@ -189,7 +129,7 @@ export default function PathologistApplicationPage({ onNavigate }) {
                   Step 2: Regulatory Accreditations & Quality Certifications
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <Input label="CLIA / NABL Certificate Number" name="qualification" value={form.qualification} onChange={handleChange} required />
+                  <Input label="CLIA / NABL Certificate Number" defaultValue="NABL-MED-ISO-15189" required />
                   <Input label="Accreditation Expiry Date" defaultValue="2028-12-31" required />
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -303,7 +243,7 @@ export default function PathologistApplicationPage({ onNavigate }) {
                 <Button
                   variant="primary"
                   size="lg"
-                  onClick={handleSubmit}
+                  onClick={() => setIsSubmitted(true)}
                   icon={ShieldCheck}
                 >
                   Submit Laboratory for Audit

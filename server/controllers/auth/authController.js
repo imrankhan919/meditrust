@@ -71,18 +71,31 @@ const loginUser = async (req, res) => {
 }
 
 
+const sanitizeUser = (user) => {
+    if (!user) return user;
+    const obj = typeof user.toObject === "function" ? user.toObject() : { ...user };
+    delete obj.password;
+    return obj;
+}
+
+
 const getMyProfile = async (req, res) => {
-    res.status(200).json(req.user)
+    res.status(200).json(sanitizeUser(req.user))
 }
 
 
 const updateProfile = async (req, res) => {
 
-    const { userType } = req.body
+    const { userType, password } = req.body
 
     if (userType) {
         res.status(401)
         throw new Error("Only Admin Can Change User Type!!!")
+    }
+
+    if (password) {
+        res.status(400)
+        throw new Error("Password cannot be changed from this route")
     }
 
     let user = await User.findById(req.user.id)
@@ -92,7 +105,7 @@ const updateProfile = async (req, res) => {
         throw new Error("No User Found!")
     }
 
-    const updatedUser = await User.findByIdAndUpdate(user._id, req.body, { new: true })
+    const updatedUser = await User.findByIdAndUpdate(user._id, req.body, { new: true }).select("-password")
 
     if (!updatedUser) {
         res.status(409)

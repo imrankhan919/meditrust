@@ -46,7 +46,7 @@ const getAllAppointments = async (req, res) => {
     }
 
     const doctor = await Doctor.findOne({ user: user._id })
-    const appointments = await DoctorAppointment.find({ doctor: doctor._id }).populate('user')
+    const appointments = await DoctorAppointment.find({ doctor: doctor._id }).populate({ path: 'user', select: '-password' })
 
     if (!appointments) {
         res.status(404)
@@ -69,7 +69,7 @@ const updateAppointment = async (req, res) => {
         throw new Error("Appointment Does Not Exist")
     }
 
-    const updatedAppointment = await DoctorAppointment.findByIdAndUpdate(appointmentId, req.body, { new: true }).populate("user").populate('doctor')
+    const updatedAppointment = await DoctorAppointment.findByIdAndUpdate(appointmentId, req.body, { new: true }).populate({ path: "user", select: "-password" }).populate('doctor')
 
     if (!updatedAppointment) {
         res.status(409)
@@ -83,7 +83,7 @@ const updateAppointment = async (req, res) => {
 
 const getAppointment = async (req, res) => {
     const appointmentId = req.params.aid
-    const appointment = await DoctorAppointment.findById(appointmentId).populate('user').populate('doctor')
+    const appointment = await DoctorAppointment.findById(appointmentId).populate({ path: 'user', select: '-password' }).populate('doctor')
 
     if (!appointment) {
         res.status(404)
@@ -98,7 +98,7 @@ const getAppointment = async (req, res) => {
 
 const getAllDoctors = async (req, res) => {
 
-    const doctors = await Doctor.find().populate('user')
+    const doctors = await Doctor.find().populate({ path: 'user', select: '-password' })
 
     if (!doctors) {
         res.status(404)
@@ -118,7 +118,7 @@ const bookAppointment = async (req, res) => {
     const appointment = new DoctorAppointment({ user: userId, doctor: did })
 
     await appointment.save()
-    await appointment.populate("user")
+    await appointment.populate({ path: "user", select: "-password" })
     await appointment.populate('doctor')
 
 

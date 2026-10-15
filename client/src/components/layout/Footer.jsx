@@ -13,24 +13,31 @@ import {
 import Button from '../common/Button';
 import { useNavigate } from 'react-router-dom';
 
-const ROUTE_MAP = {
-  'landing': '/',
-  'doctors': '/doctors',
-  'pharmacy': '/pharmacy',
-  'lab': '/lab',
+// Maps legacy view IDs to real routes. IDs without a dedicated route fall
+// back to the closest existing page so footer links never dead-end.
+const VIEW_ROUTES = {
+  doctors: '/doctors',
+  pharmacy: '/pharmacy',
+  lab: '/lab',
   'ai-hub': '/auth/ai-hub',
-  'doctor-apply': '/auth/become-doctor',
-  'pathologist-apply': '/auth/become-pathologist',
-  'dashboard': '/auth/dashboard',
-  'orders': '/auth/orders',
+  dashboard: '/auth/dashboard',
+  orders: '/auth/dashboard',
   'my-appointments': '/auth/dashboard',
   'my-lab-appointments': '/auth/dashboard',
-  'admin': '/auth/admin',
+  admin: '/auth/admin',
+  'doctor-apply': '/doctors',
+  'pathologist-apply': '/lab',
 };
 
 export default function Footer({ onNavigate }) {
   const navigate = useNavigate();
-  const go = (id) => (onNavigate ? onNavigate(id) : navigate(ROUTE_MAP[id] || '/'));
+  const go = (viewId) => {
+    if (onNavigate) {
+      onNavigate(viewId);
+      return;
+    }
+    navigate(VIEW_ROUTES[viewId] || '/');
+  };
   return (
     <footer className="bg-slate-900 text-slate-300 pt-16 pb-12 border-t border-slate-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

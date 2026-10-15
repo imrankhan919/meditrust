@@ -15,17 +15,8 @@ import {
 import Card from '../../components/common/Card';
 import Badge from '../../components/common/Badge';
 import Button from '../../components/common/Button';
-import { useNavigate } from 'react-router-dom';
 
 export default function AiHubPage({ onNavigate }) {
-  const navigate = useNavigate();
-  const goFeature = (id) => {
-    if (onNavigate) return onNavigate(id);
-    if (id === 'ai-prescription') return navigate('/auth/ai-prescription');
-    if (id === 'ai-chat') return navigate('/auth/ai-hub');
-    if (id === 'ai-symptoms') return navigate('/auth/ai-hub');
-    return navigate('/auth/ai-hub');
-  };
   const AI_FEATURES = [
     {
       id: 'ai-chat',
@@ -115,7 +106,7 @@ export default function AiHubPage({ onNavigate }) {
               <Card
                 key={feat.id}
                 hoverEffect
-                onClick={() => goFeature(feat.id)}
+                onClick={() => onNavigate(feat.id)}
                 className="p-8 flex flex-col justify-between h-full border-slate-200 hover:border-indigo-400 group relative overflow-hidden"
               >
                 <div>

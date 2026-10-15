@@ -1,25 +1,39 @@
 import React from 'react';
-import { ShieldCheck, XCircle, FileText, CheckCircle2, AlertCircle } from 'lucide-react';
+import { ShieldCheck, XCircle, CheckCircle2 } from 'lucide-react';
 import Modal from '../../components/common/Modal';
 import Badge from '../../components/common/Badge';
 import Button from '../../components/common/Button';
+
+const field = (value) => (value === undefined || value === null || value === "" ? "Not provided" : String(value));
 
 export default function VerificationModal({
   isOpen,
   onClose,
   item,
   type = 'Doctor',
+  isPending = false,
+  mutationError = null,
   onApprove,
   onReject
 }) {
   if (!item) return null;
+
+  const isDoctor = type === 'Doctor';
+  const displayName = isDoctor
+    ? item.clinicName || item.name
+    : item.laboratoryName || item.name;
+  const specialty = item.specialization || item.type;
+  const address = isDoctor ? item.address : item.laboratoryAddress;
+  const license = item.registrationNumber || item.license;
+  const contactEmail = item.email || item.user?.email;
+  const contactPhone = item.phone || item.user?.phone;
 
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
       title={`Verify ${type} Credentials`}
-      subtitle={`Review state licensure and clinical certification for ${item.name}`}
+      subtitle={`Review registration details for ${field(displayName)}`}
       maxWidth="max-w-xl"
       footer={
         <>
@@ -28,69 +42,71 @@ export default function VerificationModal({
             size="sm"
             onClick={onReject || onClose}
             icon={XCircle}
+            disabled={isPending}
           >
-            Reject Application
+            {isPending ? "Working..." : item.isVerified ? "Revoke Verification" : "Reject Application"}
           </Button>
           <Button
             variant="primary"
             size="sm"
             onClick={onApprove || onClose}
             icon={CheckCircle2}
+            disabled={isPending}
           >
-            Approve & Verify License
+            {isPending ? "Working..." : item.isVerified ? "Confirm Verified" : "Approve & Verify"}
           </Button>
         </>
       }
     >
       <div className="space-y-4">
-
-        {/* Practitioner Summary */}
         <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="font-bold text-slate-900 text-sm">{item.name}</span>
-            <Badge variant="warning" size="sm">Verification Pending</Badge>
+          <div className="flex items-center justify-between gap-2">
+            <span className="font-bold text-slate-900 text-sm">{field(displayName)}</span>
+            <Badge variant={item.isVerified ? "success" : "warning"} size="sm">
+              {item.isVerified ? "Verified" : "Verification Pending"}
+            </Badge>
           </div>
-          <div className="grid grid-cols-2 gap-2 text-slate-600">
+          <dl className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-slate-600">
             <div>
-              <span className="text-slate-400 block">Registration License:</span>
-              <span className="font-mono font-bold text-slate-800">{item.license || 'NY-MED-849102-X'}</span>
+              <dt className="text-slate-400 block">Registration Number</dt>
+              <dd className="font-mono font-bold text-slate-800">{field(license)}</dd>
             </div>
             <div>
-              <span className="text-slate-400 block">Specialty / Field:</span>
-              <span className="font-semibold text-slate-800">{item.specialty || item.type || 'Cardiology'}</span>
+              <dt className="text-slate-400 block">Specialty / Field</dt>
+              <dd className="font-semibold text-slate-800">{field(specialty)}</dd>
             </div>
-          </div>
+            <div>
+              <dt className="text-slate-400 block">{isDoctor ? "Clinic Address" : "Laboratory Address"}</dt>
+              <dd className="font-semibold text-slate-800">{field(address)}</dd>
+            </div>
+            <div>
+              <dt className="text-slate-400 block">Qualification</dt>
+              <dd className="font-semibold text-slate-800">{field(item.qualification)}</dd>
+            </div>
+            <div>
+              <dt className="text-slate-400 block">Experience</dt>
+              <dd className="font-semibold text-slate-800">{field(item.experience)}</dd>
+            </div>
+            <div>
+              <dt className="text-slate-400 block">Contact</dt>
+              <dd className="font-semibold text-slate-800">{field(contactEmail)}{contactPhone && contactPhone !== contactEmail ? ` · ${contactPhone}` : ""}</dd>
+            </div>
+          </dl>
         </div>
 
-        {/* Uploaded Certificate Preview */}
-        <div className="space-y-2">
-          <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider">
-            Attached Primary Medical Documents
-          </label>
-          <div className="space-y-2">
-            <div className="flex items-center justify-between p-3 rounded-xl border border-slate-200 bg-white text-xs">
-              <div className="flex items-center gap-2">
-                <FileText className="w-4 h-4 text-teal-600" />
-                <span className="font-semibold text-slate-800">State_Medical_License_Verification.pdf</span>
-              </div>
-              <span className="text-teal-600 font-semibold hover:underline cursor-pointer">Preview</span>
-            </div>
-            <div className="flex items-center justify-between p-3 rounded-xl border border-slate-200 bg-white text-xs">
-              <div className="flex items-center gap-2">
-                <FileText className="w-4 h-4 text-teal-600" />
-                <span className="font-semibold text-slate-800">Board_Specialty_Fellowship_Cert.pdf</span>
-              </div>
-              <span className="text-teal-600 font-semibold hover:underline cursor-pointer">Preview</span>
-            </div>
+        {mutationError && (
+          <div role="alert" className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-xs text-red-700">
+            {mutationError}
           </div>
-        </div>
+        )}
 
-        {/* Compliance Notice */}
         <div className="p-3 rounded-xl bg-teal-50 border border-teal-200 text-xs text-teal-800 flex items-start gap-2">
           <ShieldCheck className="w-4 h-4 text-teal-600 mt-0.5 shrink-0" />
-          <span>Automated NPDB (National Practitioner Data Bank) sanctions check returned clear with zero adverse records.</span>
+          <span>
+            Approving calls the real admin verification endpoint and promotes the linked
+            user account. Rejecting revokes verification. Changes refresh automatically on success.
+          </span>
         </div>
-
       </div>
     </Modal>
   );
