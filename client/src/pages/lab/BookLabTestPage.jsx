@@ -17,7 +17,6 @@ import Card from '../../components/common/Card';
 import Badge from '../../components/common/Badge';
 import Input from '../../components/common/Input';
 import Button from '../../components/common/Button';
-import { useNavigate } from 'react-router-dom';
 
 // ==========================================
 // MOCK DATA (Hardcoded for teaching purposes)
@@ -46,14 +45,6 @@ const MOCK_TIME_SLOTS = [
 ];
 
 export default function BookLabTestPage({ onNavigate }) {
-  const navigate = useNavigate();
-  const go = (id) => {
-    if (onNavigate) return onNavigate(id);
-    if (id === 'landing') navigate('/');
-    if (id === 'lab') navigate('/lab');
-    if (id === 'my-lab-appointments') navigate('/auth/dashboard');
-    return navigate('/lab');
-  };
   const [collectionMode, setCollectionMode] = useState('home'); // 'home' | 'center'
   const [selectedSlot, setSelectedSlot] = useState('07:45 AM - 08:15 AM');
   const [selectedDate, setSelectedDate] = useState('Tomorrow, Sep 24');
@@ -63,9 +54,9 @@ export default function BookLabTestPage({ onNavigate }) {
       
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-xs text-slate-500">
-        <button onClick={() => go('landing')} className="hover:text-teal-600">Home</button>
+        <button onClick={() => onNavigate('landing')} className="hover:text-teal-600">Home</button>
         <span>/</span>
-        <button onClick={() => go('lab')} className="hover:text-teal-600">Lab Tests</button>
+        <button onClick={() => onNavigate('lab')} className="hover:text-teal-600">Lab Tests</button>
         <span>/</span>
         <span className="text-slate-800 font-semibold truncate">Schedule Test</span>
       </div>
@@ -288,7 +279,7 @@ export default function BookLabTestPage({ onNavigate }) {
               variant="primary"
               size="lg"
               className="w-full justify-center shadow-md shadow-teal-600/25"
-              onClick={() => go('my-lab-appointments')}
+              onClick={() => onNavigate('my-lab-appointments')}
             >
               Confirm Lab Booking
             </Button>

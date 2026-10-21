@@ -19,7 +19,6 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import productServices from '../../services/medicalService';
 import medicalService from '../../services/medicalService';
 import Loader from '../../components/common/Loader';
-import { useNavigate } from 'react-router-dom';
 
 const MOCK_CATEGORIES = [
   'All Products',
@@ -33,9 +32,6 @@ const MOCK_CATEGORIES = [
 ];
 
 export default function ProductListingPage({ onNavigate }) {
-  const navigate = useNavigate();
-  const goAi = () => (onNavigate ? onNavigate('ai-prescription') : navigate('/auth/ai-prescription'));
-  const goDetail = (id) => (onNavigate ? onNavigate('product-detail') : navigate(id ? `/pharmacy/${id}` : '/pharmacy'));
   const [selectedCategory, setSelectedCategory] = useState('All Products');
 
   const { data, isLoading, isSuccess, isError, error } = useQuery({ queryKey: ['items'], queryFn: medicalService.fetchData })
@@ -107,7 +103,7 @@ export default function ProductListingPage({ onNavigate }) {
           <Button
             variant="outline"
             size="sm"
-            onClick={goAi}
+            onClick={() => onNavigate('ai-prescription')}
             icon={Sparkles}
             className="border-indigo-200 text-indigo-700 hover:bg-indigo-50"
           >
@@ -140,7 +136,7 @@ export default function ProductListingPage({ onNavigate }) {
       <div>
         <div className="flex items-center justify-between mb-4">
           <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-            Showing <span className="text-slate-900 font-bold">{data?.medicines.length}</span> Verified Medicines
+            Showing <span className="text-slate-900 font-bold">{data.medicines.length}</span> Verified Medicines
           </p>
           <span className="text-xs text-teal-700 font-semibold flex items-center gap-1">
             <Zap className="w-3.5 h-3.5 fill-teal-600 text-teal-600" />
@@ -158,7 +154,7 @@ export default function ProductListingPage({ onNavigate }) {
               <div>
                 {/* Product Image Area */}
                 <div
-                  onClick={() => goDetail(prod._id)}
+                  onClick={() => onNavigate('product-detail')}
                   className="relative rounded-xl overflow-hidden aspect-square mb-3 bg-slate-50 flex items-center justify-center p-4 cursor-pointer"
                 >
                   <img
@@ -171,7 +167,7 @@ export default function ProductListingPage({ onNavigate }) {
                 {/* Details */}
                 <div className="space-y-1">
                   <h3
-                    onClick={() => goDetail(prod._id)}
+                    onClick={() => onNavigate('product-detail')}
                     className="font-bold text-slate-900 text-sm hover:text-teal-700 transition-colors cursor-pointer line-clamp-1"
                   >
                     {prod.name}
@@ -190,7 +186,7 @@ export default function ProductListingPage({ onNavigate }) {
                 <Button
                   variant="primary"
                   size="sm"
-                  onClick={() => goDetail(prod._id)}
+                  onClick={() => onNavigate('product-detail')}
                   className="shadow-xs"
                 >
                   Order Now

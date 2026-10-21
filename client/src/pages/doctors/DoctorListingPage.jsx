@@ -18,7 +18,6 @@ import Button from '../../components/common/Button';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import medicalService from '../../services/medicalService';
 import Loader from '../../components/common/Loader';
-import { useNavigate } from 'react-router-dom';
 
 
 const MOCK_SPECIALTIES = [
@@ -35,9 +34,6 @@ const MOCK_SPECIALTIES = [
 
 
 export default function DoctorListingPage({ onNavigate }) {
-  const navigate = useNavigate();
-  const goApply = () => (onNavigate ? onNavigate('doctor-apply') : navigate('/auth/become-doctor'));
-  const goBooking = () => (onNavigate ? onNavigate('doctor-booking') : navigate('/doctors'));
   const [selectedSpecialty, setSelectedSpecialty] = useState('All Specialties');
 
 
@@ -82,7 +78,7 @@ export default function DoctorListingPage({ onNavigate }) {
             <Button
               variant="outline"
               size="sm"
-              onClick={goApply}
+              onClick={() => onNavigate('doctor-apply')}
               className="bg-white/10 hover:bg-white/20 text-white border-white/30"
             >
               Are you a licensed doctor? Join Our Network →
@@ -197,7 +193,7 @@ export default function DoctorListingPage({ onNavigate }) {
                 <Button
                   variant="primary"
                   size="sm"
-                  onClick={goBooking}
+                  onClick={() => onNavigate('doctor-booking')}
                   icon={Calendar}
                 >
                   Book Appointment

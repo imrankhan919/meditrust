@@ -1,44 +1,36 @@
-import React, { useState } from 'react'
+import React from 'react'
 import {
     Users,
     Package,
     Stethoscope,
     FlaskConical,
     ShoppingBag,
-    Calendar,
-    DollarSign,
-    TrendingUp,
-    Search,
-    Plus,
-    Filter,
-    Edit,
-    Trash2,
-    CheckCircle2,
-    XCircle,
-    ShieldCheck,
-    MoreVertical,
-    ChevronDown
+    LayoutDashboard,
 } from 'lucide-react';
 import Sidebar from '../common/Sidebar';
 import { useLocation } from 'react-router-dom';
 
-const AdminSidebar = () => {
+const AdminSidebar = ({ bare = false, counts = {} }) => {
 
     let { pathname } = useLocation()
 
-    let currentPath = pathname.split("/")[pathname.split("/").length - 1]
+    const segments = pathname.split("/").filter(Boolean)
+    // /auth/admin -> overview (''); /auth/admin/users -> 'users'
+    let currentPath = segments.length <= 2 ? '' : segments[segments.length - 1]
 
+    const pendingDoctors = counts.pendingDoctors;
+    const pendingPathologists = counts.pendingPathologists;
 
     const SIDEBAR_ITEMS = [
-        { id: '/', label: 'Admin Overview', icon: Package },
-        { id: 'products', label: 'Products & Inventory', icon: Package, badge: '5' },
-        { id: 'doctors', label: 'Doctors & Licensure', icon: Stethoscope, badge: '1 Pending' },
-        { id: 'pathologists', label: 'Pathology Labs', icon: FlaskConical, badge: '1 Review' },
-        { id: 'orders', label: 'Medicine Orders', icon: ShoppingBag, badge: '4' },
-        { id: 'users', label: 'Registered Users', icon: Users, badge: '12k' },
+        { id: '', label: 'Admin Overview', icon: LayoutDashboard },
+        { id: 'products', label: 'Products & Inventory', icon: Package, badge: counts.products != null ? String(counts.products) : undefined },
+        { id: 'doctors', label: 'Doctors & Licensure', icon: Stethoscope, badge: pendingDoctors ? `${pendingDoctors} Pending` : undefined },
+        { id: 'pathologists', label: 'Pathology Labs', icon: FlaskConical, badge: pendingPathologists ? `${pendingPathologists} Review` : undefined },
+        { id: 'orders', label: 'Medicine Orders', icon: ShoppingBag, badge: counts.orders != null ? String(counts.orders) : undefined },
+        { id: 'users', label: 'Registered Users', icon: Users, badge: counts.users != null ? String(counts.users) : undefined },
     ];
 
-    return (
+    const sidebar = (
         <Sidebar
             items={SIDEBAR_ITEMS}
             activeItem={currentPath}
@@ -56,11 +48,17 @@ const AdminSidebar = () => {
             footer={
                 <div className="text-xs text-slate-500 space-y-1">
                     <p className="font-semibold text-slate-700">Audit Compliance: Active</p>
-                    <p className="text-[11px] text-slate-400">HIPAA Admin Role #9941</p>
+                    <p className="text-[11px] text-slate-400">Restricted to administrators</p>
                 </div>
             }
         />
-    )
+    );
+
+    if (bare) {
+        return sidebar;
+    }
+
+    return sidebar;
 }
 
 export default AdminSidebar
