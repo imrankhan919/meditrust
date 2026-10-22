@@ -46,7 +46,7 @@ export default function Navbar({ currentView, onNavigate }) {
     { id: 'lab', label: 'Lab Tests', icon: FlaskConical },
     { id: 'auth/ai-hub', label: 'AI Health', icon: Sparkles, isAi: true },
     { id: 'auth/orders', label: 'My Orders', icon: Package },
-    user.userType === "ADMIN" ? { id: 'auth/admin', label: 'Admin', icon: ShieldAlert } :
+    user?.userType === "ADMIN" ? { id: 'auth/admin', label: 'Admin', icon: ShieldAlert } :
       { id: 'auth/dashboard', label: 'Dashboard', icon: User },
     ,
   ] : [
@@ -64,7 +64,7 @@ export default function Navbar({ currentView, onNavigate }) {
     <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-100 transition-all">
       {/* Top micro emergency & announcement bar */}
       {
-        !user.userType === "ADMIN" && (
+        !user?.userType === "ADMIN" && (
           <div className="bg-gradient-to-r from-teal-900 via-teal-800 to-slate-900 text-teal-100 text-xs py-1.5 px-4 sm:px-6">
             <div className="max-w-7xl mx-auto flex items-center justify-between">
               <div className="flex items-center gap-2">

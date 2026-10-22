@@ -52,9 +52,7 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <Router>
-        {
-          !user.userType === "ADMIN" && <Navbar />
-        }
+        <Navbar />
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
@@ -74,7 +72,7 @@ export default function App() {
           </Route>
         </Routes>
         {
-          !user.userType === "ADMIN" && <Footer />
+          !user?.userType === "ADMIN" && <Footer />
         }
         <Toaster />
       </Router>
