@@ -7,6 +7,8 @@ import express from "express"
 import dotenv from "dotenv"
 import colors from "colors"
 import connectDB from "./config/dbConfig.js"
+import path from "path";
+import { fileURLToPath } from "url";
 
 dotenv.config()
 
@@ -33,6 +35,14 @@ app.use(express.json())
 app.use(express.urlencoded())
 
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Serve React production build
+const frontendPath = path.join(__dirname, "../client/dist");
+
+app.use(express.static(frontendPath));
+
 // AUTH ROUTES
 app.use("/api/auth", authRoutes)
 
@@ -50,6 +60,24 @@ app.use("/api/pathologist", pathologistRoutes)
 
 // Doctor Routes
 app.use("/api/doctor", doctorRoutes)
+
+
+if (process.env.NODE_ENV === "production") {
+    app.get("/{*path}", (req, res) => {
+        res.sendFile(path.join(frontendPath, "index.html"));
+    });
+
+
+} else {
+    app.get("/{*path}", (req, res) => {
+        res.send("Project is Running in Dev Enviroment For Frontend Go To PORT : 5173")
+    });
+}
+
+
+
+
+
 
 // Error Handler
 app.use(errorHandler)
