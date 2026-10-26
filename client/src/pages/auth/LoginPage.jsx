@@ -64,8 +64,8 @@ export default function LoginPage({ onNavigate }) {
     }
 
 
-    if (isError && isError) {
-      toast.error(error.response.data.message)
+    if (isError) {
+      toast.error(error.response?.data?.message || error.message || "Login failed")
     }
 
   }, [isError, error, data, isSuccess])
@@ -80,19 +80,21 @@ export default function LoginPage({ onNavigate }) {
 
 
   return (
-    <div className="min-h-[85vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-slate-50 via-teal-50/20 to-white">
+    <div className="min-h-screen flex items-start sm:items-center justify-center pt-6 sm:pt-12 pb-8 px-3 sm:px-4 lg:px-8 bg-gradient-to-b from-slate-50 via-teal-50/20 to-white">
       <div className="w-full max-w-md space-y-6">
 
         {/* Brand header */}
         <div className="text-center space-y-2">
-          <div
+          <button
+            type="button"
             onClick={() => onNavigate('landing')}
-            className="inline-flex items-center gap-2 cursor-pointer group"
+            aria-label="Go to home"
+            className="inline-flex items-center gap-2 cursor-pointer group focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
           >
             <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-teal-600 to-teal-400 flex items-center justify-center text-white shadow-md shadow-teal-500/20 group-hover:scale-105 transition-transform">
               <HeartPulse className="w-7 h-7" />
             </div>
-          </div>
+          </button>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
             Welcome to MediTrust
           </h1>
@@ -150,7 +152,7 @@ export default function LoginPage({ onNavigate }) {
 
               <button
                 type="button"
-                className="font-medium text-teal-600 hover:text-teal-700 hover:underline"
+                className="font-medium text-teal-600 hover:text-teal-700 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded-md px-2 py-1"
               >
                 Forgot password?
               </button>
