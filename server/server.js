@@ -9,6 +9,7 @@ import colors from "colors"
 import connectDB from "./config/dbConfig.js"
 import path from "path";
 import { fileURLToPath } from "url";
+import cors from "cors"
 
 dotenv.config()
 
@@ -28,6 +29,17 @@ const app = express()
 
 // DB CONNECTION
 connectDB()
+
+
+app.use(
+    cors({
+        origin: [
+            "http://localhost:5173",
+            "http://127.0.0.1:5173",
+        ],
+        credentials: true,
+    })
+);
 
 
 // Body-Parser
