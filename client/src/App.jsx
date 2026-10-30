@@ -1,6 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Toaster } from 'react-hot-toast';
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  useNavigate,
+  useLocation,
+} from "react-router-dom"
 import {
   useQuery,
   useMutation,
@@ -48,34 +54,95 @@ export default function App() {
   // Create a client
   const queryClient = new QueryClient()
 
-
   return (
     <QueryClientProvider client={queryClient}>
       <Router>
-        <Navbar />
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/pharmacy" element={<ProductListingPage />} />
-          <Route path="/doctors" element={<DoctorListingPage />} />
-          <Route path="/lab" element={<LabTestListingPage />} />
-          <Route path='/auth' element={<PrivateComponent />}>
-            <Route path="dashboard" element={<UserDashboardPage />} />
-            <Route path="ai-hub" element={<AiHubPage />} />
-            <Route path="admin" element={<AdminDashboardPage />} />
-            <Route path="admin/orders" element={<AdminOrdersPage />} />
-            <Route path="admin/products" element={<AdminProductsPage />} />
-            <Route path="admin/doctors" element={<AdminDoctorsPage />} />
-            <Route path="admin/pathologists" element={<AdminDoctorsPage />} />
-            <Route path="admin/users" element={<AdminAllUsersPage />} />
-          </Route>
-        </Routes>
-        {
-          !user?.userType === "ADMIN" && <Footer />
-        }
-        <Toaster />
+        <AppContent user={user} />
       </Router>
     </QueryClientProvider>
+  );
+}
+
+// Renders everything that needs React Router context (useNavigate / useLocation).
+function AppContent({ user }) {
+  const navigate = useNavigate()
+  const location = useLocation()
+
+  // Client-side navigation used by pages and the navbar.
+  // Every page id maps to an existing route (reusing existing components).
+  const ROUTE_BY_PAGE = {
+    landing: '/',
+    login: '/login',
+    register: '/register',
+    pharmacy: '/pharmacy',
+    doctors: '/doctors',
+    lab: '/lab',
+    'doctor-booking': '/doctor-booking',
+    'product-detail': '/product-detail',
+    'ai-prescription': '/ai-prescription',
+    'ai-chat': '/ai-chat',
+    'auth/dashboard': '/auth/dashboard',
+    'auth/admin': '/auth/admin',
+    'auth/ai-hub': '/auth/ai-hub',
+    'auth/orders': '/auth/orders',
+    'auth/products': '/auth/products',
+  }
+
+  const onNavigate = (pageId) => {
+    const route = ROUTE_BY_PAGE[pageId]
+    if (route) {
+      navigate(route)
+    }
+  }
+
+  const PAGE_BY_PATH = {
+    '/': 'landing',
+    '/login': 'login',
+    '/register': 'register',
+    '/pharmacy': 'pharmacy',
+    '/doctors': 'doctors',
+    '/lab': 'lab',
+    '/doctor-booking': 'doctor-booking',
+    '/product-detail': 'product-detail',
+    '/ai-prescription': 'ai-prescription',
+    '/ai-chat': 'ai-chat',
+  }
+
+  let currentView = PAGE_BY_PATH[location.pathname]
+  if (!currentView && location.pathname.startsWith('/auth/')) {
+    currentView = location.pathname.slice(1)
+  }
+
+
+  return (
+    <>
+      <Navbar onNavigate={onNavigate} currentView={currentView} />
+      <Routes>
+        <Route path="/" element={<LandingPage onNavigate={onNavigate} />} />
+        <Route path="/login" element={<LoginPage onNavigate={onNavigate} />} />
+        <Route path="/register" element={<RegisterPage onNavigate={onNavigate} />} />
+        <Route path="/pharmacy" element={<ProductListingPage />} />
+        <Route path="/doctors" element={<DoctorListingPage />} />
+        <Route path="/lab" element={<LabTestListingPage />} />
+        <Route path="/doctor-booking" element={<DoctorBookingPage />} />
+        <Route path="/product-detail" element={<ProductDetailPage />} />
+        <Route path="/ai-prescription" element={<PrescriptionExplainerPage />} />
+        <Route path="/ai-chat" element={<AiChatPage />} />
+        <Route path='/auth' element={<PrivateComponent />}>
+          <Route path="dashboard" element={<UserDashboardPage />} />
+          <Route path="ai-hub" element={<AiHubPage />} />
+          <Route path="admin" element={<AdminDashboardPage />} />
+          <Route path="admin/orders" element={<AdminOrdersPage />} />
+          <Route path="admin/products" element={<AdminProductsPage />} />
+          <Route path="admin/doctors" element={<AdminDoctorsPage />} />
+          <Route path="admin/pathologists" element={<AdminDoctorsPage />} />
+          <Route path="admin/users" element={<AdminAllUsersPage />} />
+        </Route>
+      </Routes>
+      {
+        !user?.userType === "ADMIN" && <Footer />
+      }
+      <Toaster />
+    </>
   );
 }

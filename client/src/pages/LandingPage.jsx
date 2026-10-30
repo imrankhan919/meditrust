@@ -387,10 +387,12 @@ export default function LandingPage({ onNavigate }) {
           {MOCK_CATEGORIES.map((cat) => {
             const Icon = cat.icon;
             return (
-              <div
+              <button
+                type="button"
                 key={cat.id}
                 onClick={() => onNavigate(cat.id)}
-                className="group relative bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs hover:shadow-xl hover:-translate-y-1.5 hover:border-teal-400 transition-all duration-300 cursor-pointer flex flex-col justify-between">
+                aria-label={`Explore ${cat.name}`}
+                className="group relative bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs hover:shadow-xl hover:-translate-y-1.5 hover:border-teal-400 transition-all duration-300 cursor-pointer flex flex-col justify-between focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2">
                 <div>
                   <div className="flex items-center justify-between mb-4">
                     <div
@@ -417,7 +419,7 @@ export default function LandingPage({ onNavigate }) {
                     <ArrowRight className="w-3.5 h-3.5" />
                   </div>
                 </div>
-              </div>
+              </button>
             );
           })}
         </div>
@@ -456,7 +458,7 @@ export default function LandingPage({ onNavigate }) {
               className="flex flex-col justify-between h-full p-4">
               <div>
                 <h3 className="font-bold text-slate-900 text-base">
-                  {doctor.user.name}
+                  {doctor.user?.name || "Unknown Doctor"}
                 </h3>
                 <p className="text-xs font-semibold text-teal-700">
                   {doctor.specialization}
