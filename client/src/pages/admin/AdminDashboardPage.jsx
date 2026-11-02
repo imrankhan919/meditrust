@@ -32,8 +32,10 @@ import toast from "react-hot-toast";
 import LoaderScreen from "../../components/common/Loader";
 import AdminSidebar from "../../components/admin/AdminSidebar";
 import { useLocation } from "react-router-dom";
+import useNavigateById from "../../hooks/useNavigateById";
 
-export default function AdminDashboardPage({ onNavigate }) {
+export default function AdminDashboardPage() {
+  const onNavigate = useNavigateById();
   const { user } = useSelector((state) => state.auth);
 
   let { pathname } = useLocation();

@@ -11,8 +11,11 @@ import {
   Heart
 } from 'lucide-react';
 import Button from '../common/Button';
+import useNavigateById from '../../hooks/useNavigateById';
 
-export default function Footer({ onNavigate }) {
+export default function Footer() {
+  const onNavigate = useNavigateById();
+
   return (
     <footer className="bg-slate-900 text-slate-300 pt-16 pb-12 border-t border-slate-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

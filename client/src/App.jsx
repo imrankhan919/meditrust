@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Toaster } from 'react-hot-toast';
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
 import {
@@ -11,7 +11,6 @@ import {
 
 import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
-import PageSwitcher from './components/navigation/PageSwitcher';
 
 // Pages
 import LandingPage from './pages/LandingPage';
@@ -58,21 +57,32 @@ export default function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/pharmacy" element={<ProductListingPage />} />
+          <Route path="/product-detail" element={<ProductDetailPage />} />
           <Route path="/doctors" element={<DoctorListingPage />} />
+          <Route path="/doctor-booking" element={<DoctorBookingPage />} />
+          <Route path="/doctors/apply" element={<DoctorApplicationPage />} />
           <Route path="/lab" element={<LabTestListingPage />} />
+          <Route path="/lab/booking" element={<BookLabTestPage />} />
+          <Route path="/lab/apply" element={<PathologistApplicationPage />} />
+          <Route path="/ai-chat" element={<AiChatPage />} />
+          <Route path="/ai/prescription" element={<PrescriptionExplainerPage />} />
+          <Route path="/ai/symptoms" element={<FindMedicinesBySymptomPage />} />
           <Route path='/auth' element={<PrivateComponent />}>
             <Route path="dashboard" element={<UserDashboardPage />} />
+            <Route path="orders" element={<MyOrdersPage />} />
+            <Route path="my-appointments" element={<MyAppointmentsPage />} />
+            <Route path="my-lab-appointments" element={<MyLabAppointmentsPage />} />
             <Route path="ai-hub" element={<AiHubPage />} />
             <Route path="admin" element={<AdminDashboardPage />} />
             <Route path="admin/orders" element={<AdminOrdersPage />} />
             <Route path="admin/products" element={<AdminProductsPage />} />
             <Route path="admin/doctors" element={<AdminDoctorsPage />} />
-            <Route path="admin/pathologists" element={<AdminDoctorsPage />} />
+            <Route path="admin/pathologists" element={<AdminPathologistsPage />} />
             <Route path="admin/users" element={<AdminAllUsersPage />} />
           </Route>
         </Routes>
         {
-          !user?.userType === "ADMIN" && <Footer />
+          user?.userType !== "ADMIN" && <Footer />
         }
         <Toaster />
       </Router>

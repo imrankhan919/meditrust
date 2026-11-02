@@ -16,6 +16,7 @@ import {
 import Card from '../../components/common/Card';
 import Badge from '../../components/common/Badge';
 import Button from '../../components/common/Button';
+import useNavigateById from '../../hooks/useNavigateById';
 
 // ==========================================
 // MOCK DATA (Hardcoded for teaching purposes)
@@ -114,7 +115,8 @@ const MOCK_ORDERS = [
 
 const FILTER_TABS = ['All Orders', 'Pending / Processing', 'Shipped', 'Delivered', 'Cancelled'];
 
-export default function MyOrdersPage({ onNavigate }) {
+export default function MyOrdersPage() {
+  const onNavigate = useNavigateById();
   const [activeTab, setActiveTab] = useState('All Orders');
   const [showEmptyState, setShowEmptyState] = useState(false);
 

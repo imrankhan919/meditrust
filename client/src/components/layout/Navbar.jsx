@@ -15,12 +15,13 @@ import {
   PhoneCall
 } from 'lucide-react';
 import { useSelector, useDispatch } from 'react-redux'
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useLocation } from "react-router-dom"
 import Button from '../common/Button';
 import { logoutUser } from '../../features/auth/authSlice';
 
-export default function Navbar({ currentView, onNavigate }) {
+export default function Navbar() {
 
+  const { pathname } = useLocation();
 
   const { user } = useSelector(state => state.auth)
 
@@ -48,23 +49,17 @@ export default function Navbar({ currentView, onNavigate }) {
     { id: 'auth/orders', label: 'My Orders', icon: Package },
     user?.userType === "ADMIN" ? { id: 'auth/admin', label: 'Admin', icon: ShieldAlert } :
       { id: 'auth/dashboard', label: 'Dashboard', icon: User },
-    ,
   ] : [
     { id: 'pharmacy', label: 'Pharmacy', icon: Pill },
     { id: 'doctors', label: 'Doctors', icon: Calendar },
     { id: 'lab', label: 'Lab Tests', icon: FlaskConical },
   ]
 
-  const handleNav = (viewId) => {
-    onNavigate(viewId);
-    setMobileMenuOpen(false);
-  };
-
   return (
     <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-100 transition-all">
       {/* Top micro emergency & announcement bar */}
       {
-        !user?.userType === "ADMIN" && (
+        user?.userType !== "ADMIN" && (
           <div className="bg-gradient-to-r from-teal-900 via-teal-800 to-slate-900 text-teal-100 text-xs py-1.5 px-4 sm:px-6">
             <div className="max-w-7xl mx-auto flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -107,12 +102,12 @@ export default function Navbar({ currentView, onNavigate }) {
           {/* Desktop Navigation Links */}
           <nav className="hidden lg:flex items-center space-x-1">
             {navLinks.map((link) => {
-              const isActive = currentView === link.id;
+              const isActive = pathname === '/' + link.id;
               const Icon = link.icon;
               return (
                 <button
                   key={link.id}
-                  onClick={() => handleNavigate("/" + link.id)}
+                  onClick={() => handleNavigate('/' + link.id)}
                   type="button"
                   className={`px-3 py-2 rounded-xl text-sm font-medium transition-all duration-200 flex items-center gap-1.5 ${isActive
                     ? 'bg-teal-50 text-teal-800 font-semibold'
@@ -177,7 +172,7 @@ export default function Navbar({ currentView, onNavigate }) {
               variant="outline"
               size="sm"
               className="sm:hidden text-xs py-1 px-2.5"
-              onClick={() => handleNav('login')}
+              onClick={() => handleNavigate('/login')}
             >
               Sign In
             </Button>
@@ -199,12 +194,12 @@ export default function Navbar({ currentView, onNavigate }) {
         <div className="lg:hidden border-t border-slate-100 bg-white px-4 pt-3 pb-6 shadow-xl animate-in slide-in-from-top duration-200">
           <div className="space-y-1 pb-4 border-b border-slate-100">
             {navLinks.map((link) => {
-              const isActive = currentView === link.id;
+              const isActive = pathname === '/' + link.id;
               const Icon = link.icon;
               return (
                 <button
                   key={link.id}
-                  onClick={() => handleNav(link.id)}
+                  onClick={() => handleNavigate('/' + link.id)}
                   type="button"
                   className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-colors ${isActive
                     ? 'bg-teal-50 text-teal-800 font-semibold'
@@ -230,7 +225,7 @@ export default function Navbar({ currentView, onNavigate }) {
               variant="outline"
               size="md"
               className="w-full justify-center"
-              onClick={() => handleNav('login')}
+              onClick={() => handleNavigate('/login')}
             >
               Sign In
             </Button>
@@ -238,7 +233,7 @@ export default function Navbar({ currentView, onNavigate }) {
               variant="primary"
               size="md"
               className="w-full justify-center"
-              onClick={() => handleNav('register')}
+              onClick={() => handleNavigate('/register')}
             >
               Register
             </Button>

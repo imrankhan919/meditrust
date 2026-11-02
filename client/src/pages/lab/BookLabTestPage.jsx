@@ -17,6 +17,7 @@ import Card from '../../components/common/Card';
 import Badge from '../../components/common/Badge';
 import Input from '../../components/common/Input';
 import Button from '../../components/common/Button';
+import useNavigateById from '../../hooks/useNavigateById';
 
 // ==========================================
 // MOCK DATA (Hardcoded for teaching purposes)
@@ -44,7 +45,8 @@ const MOCK_TIME_SLOTS = [
   '11:00 AM - 11:30 AM',
 ];
 
-export default function BookLabTestPage({ onNavigate }) {
+export default function BookLabTestPage() {
+  const onNavigate = useNavigateById();
   const [collectionMode, setCollectionMode] = useState('home'); // 'home' | 'center'
   const [selectedSlot, setSelectedSlot] = useState('07:45 AM - 08:15 AM');
   const [selectedDate, setSelectedDate] = useState('Tomorrow, Sep 24');

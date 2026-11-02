@@ -19,6 +19,7 @@ import {
 import Card from '../../components/common/Card';
 import Badge from '../../components/common/Badge';
 import Button from '../../components/common/Button';
+import useNavigateById from '../../hooks/useNavigateById';
 
 // ==========================================
 // MOCK DATA (Hardcoded for teaching purposes)
@@ -87,7 +88,8 @@ const MOCK_RELATED_PRODUCTS = [
   },
 ];
 
-export default function ProductDetailPage({ onNavigate }) {
+export default function ProductDetailPage() {
+  const onNavigate = useNavigateById();
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(MOCK_PRODUCT_DETAIL.images[0]);
   const [orderModalOpen, setOrderModalOpen] = useState(false);
