@@ -15,6 +15,7 @@ import {
 import Card from '../../components/common/Card';
 import Badge from '../../components/common/Badge';
 import Button from '../../components/common/Button';
+import useNavigateById from '../../hooks/useNavigateById';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import medicalService from '../../services/medicalService';
 import Loader from '../../components/common/Loader';
@@ -33,7 +34,9 @@ const MOCK_SPECIALTIES = [
 ];
 
 
-export default function DoctorListingPage({ onNavigate }) {
+export default function DoctorListingPage() {
+  const onNavigate = useNavigateById();
+
   const [selectedSpecialty, setSelectedSpecialty] = useState('All Specialties');
 
 

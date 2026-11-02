@@ -22,7 +22,7 @@ import { register } from '../../features/auth/authSlice';
 
 
 
-export default function LoginPage({ onNavigate }) {
+export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
 
   const { mutate, data, isPending, isSuccess, isError, error } = useMutation({ mutationFn: (payload) => authService.loginUser(payload) })
@@ -86,7 +86,7 @@ export default function LoginPage({ onNavigate }) {
         {/* Brand header */}
         <div className="text-center space-y-2">
           <div
-            onClick={() => onNavigate('landing')}
+            onClick={() => navigate('/')}
             className="inline-flex items-center gap-2 cursor-pointer group"
           >
             <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-teal-600 to-teal-400 flex items-center justify-center text-white shadow-md shadow-teal-500/20 group-hover:scale-105 transition-transform">
@@ -182,7 +182,7 @@ export default function LoginPage({ onNavigate }) {
               Don't have a MediTrust account?{' '}
               <button
                 type="button"
-                onClick={() => onNavigate('register')}
+                onClick={() => navigate('/register')}
                 className="font-bold text-teal-600 hover:text-teal-700 hover:underline"
               >
                 Create Account

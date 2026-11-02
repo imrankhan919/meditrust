@@ -14,6 +14,7 @@ import {
 import Card from '../../components/common/Card';
 import Badge from '../../components/common/Badge';
 import Button from '../../components/common/Button';
+import useNavigateById from '../../hooks/useNavigateById';
 
 // ==========================================
 // MOCK DATA (Hardcoded for teaching purposes)
@@ -83,7 +84,8 @@ const MOCK_APPOINTMENTS = [
 
 const TABS = ['All Appointments', 'Upcoming', 'Completed', 'Cancelled'];
 
-export default function MyAppointmentsPage({ onNavigate }) {
+export default function MyAppointmentsPage() {
+  const onNavigate = useNavigateById();
   const [activeTab, setActiveTab] = useState('All Appointments');
 
   const filteredAppointments = MOCK_APPOINTMENTS.filter((apt) => {

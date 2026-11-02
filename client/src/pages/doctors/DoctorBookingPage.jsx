@@ -18,6 +18,7 @@ import {
 import Card from '../../components/common/Card';
 import Badge from '../../components/common/Badge';
 import Button from '../../components/common/Button';
+import useNavigateById from '../../hooks/useNavigateById';
 
 // ==========================================
 // MOCK DATA (Hardcoded for teaching purposes)
@@ -73,7 +74,8 @@ const MOCK_SLOTS = {
   evening: ['05:30 PM', '06:15 PM'],
 };
 
-export default function DoctorBookingPage({ onNavigate }) {
+export default function DoctorBookingPage() {
+  const onNavigate = useNavigateById();
   const [selectedDay, setSelectedDay] = useState('Today');
   const [selectedSlot, setSelectedSlot] = useState('03:30 PM');
   const [consultMode, setConsultMode] = useState('video'); // 'video' | 'clinic'

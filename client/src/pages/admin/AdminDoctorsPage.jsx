@@ -33,7 +33,7 @@ import LoaderScreen from "../../components/common/Loader";
 import AdminSidebar from "../../components/admin/AdminSidebar";
 import { useLocation } from "react-router-dom";
 
-export default function AdminDoctorsPage({ onNavigate }) {
+export default function AdminDoctorsPage() {
   const { user } = useSelector((state) => state.auth);
 
   let { pathname } = useLocation();

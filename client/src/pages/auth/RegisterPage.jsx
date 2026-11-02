@@ -19,7 +19,7 @@ import Loader from '../../components/common/Loader';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 
-export default function RegisterPage({ onNavigate }) {
+export default function RegisterPage() {
 
   const { mutate, data, isPending, isSuccess, isError, error } = useMutation({ mutationFn: (payload) => authService.registerUser(payload) })
 
@@ -77,7 +77,7 @@ export default function RegisterPage({ onNavigate }) {
         {/* Brand header */}
         <div className="text-center space-y-2">
           <div
-            onClick={() => onNavigate('landing')}
+            onClick={() => navigate('/')}
             className="inline-flex items-center gap-2 cursor-pointer group"
           >
             <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-teal-600 to-teal-400 flex items-center justify-center text-white shadow-md shadow-teal-500/20 group-hover:scale-105 transition-transform">
@@ -206,7 +206,7 @@ export default function RegisterPage({ onNavigate }) {
               Already have an account?{' '}
               <button
                 type="button"
-                onClick={() => onNavigate('login')}
+                onClick={() => navigate('/login')}
                 className="font-bold text-teal-600 hover:text-teal-700 hover:underline"
               >
                 Sign In Instead

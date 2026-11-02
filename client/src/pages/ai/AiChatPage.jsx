@@ -15,6 +15,7 @@ import {
 import Card from '../../components/common/Card';
 import Badge from '../../components/common/Badge';
 import Button from '../../components/common/Button';
+import useNavigateById from '../../hooks/useNavigateById';
 
 // ==========================================
 // MOCK DATA (Hardcoded for teaching purposes)
@@ -58,7 +59,8 @@ Here is clinical guidance:
   },
 ];
 
-export default function AiChatPage({ onNavigate }) {
+export default function AiChatPage() {
+  const onNavigate = useNavigateById();
   const [messages, setMessages] = useState(INITIAL_MESSAGES);
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(true);

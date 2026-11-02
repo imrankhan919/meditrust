@@ -21,6 +21,7 @@ import {
 import Card from "../components/common/Card";
 import Badge from "../components/common/Badge";
 import Button from "../components/common/Button";
+import useNavigateById from "../hooks/useNavigateById";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import productServices from "../services/medicalService";
 import medicalService from "../services/medicalService";
@@ -167,7 +168,8 @@ const MOCK_TESTIMONIALS = [
   },
 ];
 
-export default function LandingPage({ onNavigate }) {
+export default function LandingPage() {
+  const onNavigate = useNavigateById();
   const { data, isLoading, isSuccess, isError, error } = useQuery({
     queryKey: ["items"],
     queryFn: medicalService.fetchData,

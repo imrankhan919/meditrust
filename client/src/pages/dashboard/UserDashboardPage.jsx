@@ -52,7 +52,7 @@ const MOCK_PRESCRIPTIONS = [
   },
 ];
 
-export default function UserDashboardPage({ onNavigate }) {
+export default function UserDashboardPage() {
 
   const { user } = useSelector(state => state.auth)
 
@@ -195,7 +195,7 @@ export default function UserDashboardPage({ onNavigate }) {
           <p className="text-xs text-slate-500 max-w-md mx-auto">
             You have active orders in transit. Manage doorstep deliveries and view invoices in the dedicated orders hub.
           </p>
-          <Button variant="primary" size="md" onClick={() => onNavigate('orders')}>
+          <Button variant="primary" size="md" onClick={() => navigate('/auth/orders')}>
             Open Full Orders View →
           </Button>
         </Card>
@@ -209,7 +209,7 @@ export default function UserDashboardPage({ onNavigate }) {
           <p className="text-xs text-slate-500 max-w-md mx-auto">
             You have upcoming consultations with Dr. Sarah Jenkins. Launch video room or reschedule visits.
           </p>
-          <Button variant="primary" size="md" onClick={() => onNavigate('my-appointments')}>
+          <Button variant="primary" size="md" onClick={() => navigate('/auth/my-appointments')}>
             Open Doctor Appointments View →
           </Button>
         </Card>
@@ -223,7 +223,7 @@ export default function UserDashboardPage({ onNavigate }) {
           <p className="text-xs text-slate-500 max-w-md mx-auto">
             Check sample collection status, track phlebotomist arrival, and download verified PDF reports.
           </p>
-          <Button variant="primary" size="md" onClick={() => onNavigate('my-lab-appointments')}>
+          <Button variant="primary" size="md" onClick={() => navigate('/auth/my-lab-appointments')}>
             Open Lab Appointments View →
           </Button>
         </Card>
@@ -239,7 +239,7 @@ export default function UserDashboardPage({ onNavigate }) {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => onNavigate('ai-prescription')}
+              onClick={() => navigate('/ai/prescription')}
               icon={FileText}
             >
               Scan New Prescription with AI
@@ -268,7 +268,7 @@ export default function UserDashboardPage({ onNavigate }) {
                   <Button variant="outline" size="sm" icon={Download}>
                     Download PDF
                   </Button>
-                  <Button variant="primary" size="sm" onClick={() => onNavigate('pharmacy')}>
+                  <Button variant="primary" size="sm" onClick={() => navigate('/pharmacy')}>
                     Order Meds
                   </Button>
                 </div>

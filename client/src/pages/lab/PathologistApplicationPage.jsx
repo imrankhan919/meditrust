@@ -16,6 +16,7 @@ import {
 import Card from '../../components/common/Card';
 import Input from '../../components/common/Input';
 import Button from '../../components/common/Button';
+import useNavigateById from '../../hooks/useNavigateById';
 import Badge from '../../components/common/Badge';
 
 const STEPS = [
@@ -25,7 +26,9 @@ const STEPS = [
   { id: 4, name: 'Certificates', desc: 'License Dropzone' },
 ];
 
-export default function PathologistApplicationPage({ onNavigate }) {
+export default function PathologistApplicationPage() {
+  const onNavigate = useNavigateById();
+
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitted, setIsSubmitted] = useState(false);
 

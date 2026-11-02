@@ -13,6 +13,7 @@ import {
 import Card from '../../components/common/Card';
 import Badge from '../../components/common/Badge';
 import Button from '../../components/common/Button';
+import useNavigateById from '../../hooks/useNavigateById';
 
 // ==========================================
 // MOCK DATA (Hardcoded for teaching purposes)
@@ -64,7 +65,8 @@ const MOCK_AI_ANALYSIS = {
   ],
 };
 
-export default function FindMedicinesBySymptomPage({ onNavigate }) {
+export default function FindMedicinesBySymptomPage() {
+  const onNavigate = useNavigateById();
   const [query, setQuery] = useState('Acid Reflux & Heartburn');
 
   return (

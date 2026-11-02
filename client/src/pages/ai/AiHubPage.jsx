@@ -15,8 +15,10 @@ import {
 import Card from '../../components/common/Card';
 import Badge from '../../components/common/Badge';
 import Button from '../../components/common/Button';
+import useNavigateById from '../../hooks/useNavigateById';
 
-export default function AiHubPage({ onNavigate }) {
+export default function AiHubPage() {
+  const onNavigate = useNavigateById();
   const AI_FEATURES = [
     {
       id: 'ai-chat',

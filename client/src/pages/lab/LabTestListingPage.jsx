@@ -15,6 +15,7 @@ import {
 import Card from '../../components/common/Card';
 import Badge from '../../components/common/Badge';
 import Button from '../../components/common/Button';
+import useNavigateById from '../../hooks/useNavigateById';
 import { useQuery } from '@tanstack/react-query';
 import medicalService from '../../services/medicalService';
 import Loader from '../../components/common/Loader';
@@ -31,7 +32,8 @@ const MOCK_CATEGORIES = [
 ];
 
 
-export default function LabTestListingPage({ onNavigate }) {
+export default function LabTestListingPage() {
+  const onNavigate = useNavigateById();
   const [selectedCategory, setSelectedCategory] = useState('All Lab Tests');
 
   const { data, isLoading, isSuccess, isError, error } = useQuery({ queryKey: ['items'], queryFn: medicalService.fetchData })
